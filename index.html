@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Margföldunartaflan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --sky: #6ECFFF;
+    --sun: #FFD93D;
+    --coral: #FF6B6B;
+    --mint: #6BFFB8;
+    --purple: #C678FF;
+    --bg: #FFF8F0;
+    --shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+    background-image:
+      radial-gradient(circle at 15% 15%, rgba(110,207,255,0.18) 0%, transparent 50%),
+      radial-gradient(circle at 85% 85%, rgba(198,120,255,0.14) 0%, transparent 50%);
+  }
+
+  h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.6rem;
+    color: var(--coral);
+    text-shadow: 3px 3px 0 rgba(255,107,107,0.18);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .subtitle { font-size: 1rem; color: #999; margin-bottom: 22px; font-weight: 700; }
+
+  /* ── NAV ── */
+  .mode-row {
+    display: flex; gap: 8px; margin-bottom: 20px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .mode-btn {
+    padding: 9px 20px; border-radius: 50px;
+    border: 2px solid #E0E0E0; background: white;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.88rem;
+    cursor: pointer; transition: all 0.15s; color: #666;
+  }
+  .mode-btn.active {
+    background: var(--purple); border-color: var(--purple); color: white;
+    box-shadow: 0 4px 14px rgba(198,120,255,0.35);
+  }
+
+  /* ── TABLE SELECTOR ── */
+  .table-select {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center; margin-bottom: 26px; max-width: 480px;
+  }
+  .tbl-btn {
+    width: 52px; height: 52px; border-radius: 16px;
+    border: 3px solid transparent;
+    font-family: 'Fredoka One', cursive; font-size: 1.3rem;
+    cursor: pointer; transition: all 0.18s cubic-bezier(.34,1.56,.64,1);
+    background: white; color: #333; box-shadow: 0 3px 10px rgba(0,0,0,0.09);
+  }
+  .tbl-btn:hover { transform: scale(1.15); }
+  .tbl-btn.active {
+    background: var(--coral); color: white; border-color: #e04040;
+    transform: scale(1.2); box-shadow: 0 6px 18px rgba(255,107,107,0.4);
+  }
+
+  /* ── QUIZ CARD ── */
+  .quiz-card {
+    background: white; border-radius: 28px; padding: 36px 40px;
+    box-shadow: var(--shadow); text-align: center;
+    max-width: 420px; width: 100%; position: relative; overflow: hidden;
+  }
+  .quiz-card::before {
+    content: ''; position: absolute; top: -30px; right: -30px;
+    width: 130px; height: 130px;
+    background: radial-gradient(circle, rgba(255,217,61,0.28), transparent 70%);
+    border-radius: 50%;
+  }
+  .question-display {
+    font-family: 'Fredoka One', cursive; font-size: 3.2rem;
+    color: #2D2D2D; margin-bottom: 10px; letter-spacing: 1px;
+  }
+  .question-display .a { color: var(--coral); }
+  .question-display .b { color: var(--purple); }
+
+  .input-row { display: flex; gap: 12px; justify-content: center; align-items: center; margin: 18px 0 8px; }
+
+  .ans-input, #answer-input, #all-input {
+    font-family: 'Fredoka One', cursive; font-size: 2rem; width: 80px;
+    text-align: center; border: 3px solid #E8E8E8; border-radius: 16px;
+    padding: 10px 4px; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    color: #2D2D2D; background: #FAFAFA;
+  }
+  .ans-input:focus, #answer-input:focus, #all-input:focus { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(110,207,255,0.25); background: white; }
+  .ans-input.correct, #answer-input.correct, #all-input.correct { border-color: var(--mint); background: #f0fff8; box-shadow: 0 0 0 4px rgba(107,255,184,0.3); }
+  .ans-input.wrong, #answer-input.wrong, #all-input.wrong { border-color: var(--coral); background: #fff5f5; animation: shake 0.35s ease; }
+  /* hide spinner arrows */
+  .ans-input::-webkit-outer-spin-button, #answer-input::-webkit-outer-spin-button, #all-input::-webkit-outer-spin-button,
+  .ans-input::-webkit-inner-spin-button, #answer-input::-webkit-inner-spin-button, #all-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .ans-input[type=number], #answer-input[type=number], #all-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-5px); }
+  }
+
+  .check-btn {
+    background: var(--sun); border: none; border-radius: 14px;
+    width: 56px; height: 56px; font-size: 1.6rem; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,217,61,0.4); transition: transform 0.15s;
+  }
+  .check-btn:hover { transform: scale(1.1); }
+
+  .feedback { min-height: 30px; font-size: 1.05rem; font-weight: 800; margin-top: 6px; color: #2D2D2D; }
+  .feedback.ok { color: #22c97e; }
+  .feedback.no { color: var(--coral); }
+
+  .streak-display {
+    font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+    color: var(--sun); text-shadow: 1px 1px 0 rgba(0,0,0,0.12);
+    min-height: 22px; margin-top: 4px;
+  }
+  .next-btn {
+    margin-top: 14px; padding: 10px 28px;
+    background: linear-gradient(135deg, var(--sky), #4a8fe2);
+    border: none; border-radius: 50px; color: white;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.95rem;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(78,145,226,0.35);
+    transition: transform 0.15s; display: none;
+  }
+  .next-btn:hover { transform: translateY(-2px); }
+
+  .stats-row { display: flex; gap: 14px; justify-content: center; margin-top: 20px; }
+  .stat-chip {
+    background: #F4F4F4; border-radius: 50px; padding: 6px 16px;
+    font-weight: 800; font-size: 0.9rem; color: #555;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .stat-chip .num { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #2D2D2D; }
+
+  .progress-wrap { width: 100%; height: 10px; background: #EEE; border-radius: 10px; margin-top: 14px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--sky), var(--purple)); border-radius: 10px; transition: width 0.4s cubic-bezier(.34,1.56,.64,1); width: 0%; }
+
+  /* ── ALL MODE ── */
+  .all-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #6ECFFF, #C678FF);
+    color: white; font-family: 'Fredoka One', cursive; font-size: 1rem;
+    padding: 5px 18px; border-radius: 50px; margin-bottom: 14px;
+    box-shadow: 0 3px 10px rgba(110,207,255,0.35);
+  }
+  .round-info { margin-top: 10px; font-size: 0.82rem; color: #bbb; font-weight: 700; min-height: 18px; }
+
+  /* ── TABLE GRID ── */
+  .table-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 8px; max-width: 420px; width: 100%;
+  }
+  .tg-cell {
+    background: white; border-radius: 14px; padding: 12px 6px;
+    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: background 0.2s, transform 0.15s;
+  }
+  .tg-cell:hover { background: var(--sun); transform: scale(1.06); }
+  .tg-cell .small { font-size: 0.7rem; color: #aaa; font-weight: 700; }
+  .tg-cell .big { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: #2D2D2D; }
+
+  /* ══════════════════════════════════════
+     GAME MODE
+  ══════════════════════════════════════ */
+  #game-section { width: 100%; max-width: 460px; }
+
+  .game-card {
+    background: white; border-radius: 28px; padding: 26px 30px 30px;
+    box-shadow: var(--shadow); text-align: center; position: relative; overflow: hidden;
+  }
+
+  /* overlay */
+  .overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(255,255,255,0.96); border-radius: 28px;
+    flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10; gap: 10px; padding: 24px;
+  }
+  .overlay.show { display: flex; }
+  .ov-emoji { font-size: 4rem; animation: starpop 0.5s ease; }
+  .ov-title {
+    font-family: 'Fredoka One', cursive; font-size: 1.9rem;
+    color: var(--coral); text-align: center; line-height: 1.25;
+  }
+  .ov-sub { font-size: 0.95rem; color: #888; font-weight: 700; text-align: center; }
+  .ov-motto { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: var(--coral); font-style: italic; }
+  .ov-stars { font-size: 1.6rem; letter-spacing: 4px; min-height: 32px; }
+  .ov-btn {
+    margin-top: 10px; padding: 12px 36px;
+    background: linear-gradient(135deg, var(--coral), #ff9f40);
+    border: none; border-radius: 50px; color: white;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.05rem;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(255,107,107,0.4);
+    transition: transform 0.15s;
+  }
+  .ov-btn:hover { transform: scale(1.05); }
+
+  /* level header */
+  .level-banner {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .level-label { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--purple); }
+  .level-name  { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #999; }
+
+  /* lives */
+  .lives-row { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; }
+  .heart { font-size: 1.4rem; transition: filter 0.3s, transform 0.2s; }
+  .heart.lost { filter: grayscale(1) opacity(0.3); transform: scale(0.8); }
+
+  /* star bar */
+  .star-bar { display: flex; gap: 5px; justify-content: center; margin-bottom: 14px; }
+  .star-slot {
+    font-size: 1.6rem;
+    filter: grayscale(1) opacity(0.25);
+    transition: filter 0.3s, transform 0.3s;
+  }
+  .star-slot.earned { filter: none; transform: scale(1.15); }
+
+  @keyframes starpop {
+    0%   { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.4) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1.15) rotate(0deg); opacity: 1; }
+  }
+  .star-slot.pop { animation: starpop 0.45s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+  /* timer */
+  .timer-wrap { width: 100%; height: 8px; background: #EEE; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+  .timer-fill {
+    height: 100%; border-radius: 8px;
+    background: linear-gradient(90deg, #6BFFB8, #6ECFFF);
+    transition: width 0.1s linear, background 0.5s;
+    width: 100%;
+  }
+  .timer-fill.danger { background: linear-gradient(90deg, var(--coral), #FF9F40); }
+
+  /* question */
+  .game-q {
+    font-family: 'Fredoka One', cursive; font-size: 3rem;
+    color: #2D2D2D; margin-bottom: 16px; letter-spacing: 1px;
+  }
+  .game-q .a { color: var(--coral); }
+  .game-q .b { color: var(--purple); }
+
+  /* choices */
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .choice-btn {
+    font-family: 'Fredoka One', cursive; font-size: 2rem;
+    padding: 14px 10px; border-radius: 16px;
+    border: 3px solid #E8E8E8; background: #FAFAFA;
+    cursor: pointer; color: #2D2D2D;
+    transition: all 0.14s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--sky); background: white;
+    box-shadow: 0 0 0 4px rgba(110,207,255,0.25); transform: scale(1.04);
+  }
+  .choice-btn.correct-choice { border-color: var(--mint); background: #f0fff8; color: #1a9966; box-shadow: 0 0 0 4px rgba(107,255,184,0.3); }
+  .choice-btn.wrong-choice   { border-color: var(--coral); background: #fff5f5; color: #cc3030; animation: shake 0.35s ease; }
+  .choice-btn:disabled { cursor: default; }
+
+  .game-feedback { min-height: 26px; font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+  .game-feedback.ok { color: #22c97e; }
+  .game-feedback.no { color: var(--coral); }
+
+  /* footer */
+  .game-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px; }
+  .gf-chip {
+    background: #F4F4F4; border-radius: 50px; padding: 5px 12px;
+    font-weight: 800; font-size: 0.82rem; color: #555;
+    display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center;
+  }
+  .gf-chip .num { font-family: 'Fredoka One', cursive; font-size: 0.95rem; color: #2D2D2D; }
+
+  /* ── CONFETTI ── */
+  .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
+  .cp { position: absolute; width: 11px; height: 11px; border-radius: 3px; animation: cfall linear forwards; }
+  @keyframes cfall {
+    0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🔢 Margföldunartaflan</h1>
+<p class="subtitle">Vertu stjarnan í tímanum! ⭐</p>
+
+<div class="mode-row">
+  <button class="mode-btn active" id="btn-quiz"  onclick="setMode('quiz')">🎯 Æfing</button>
+  <button class="mode-btn"        id="btn-all"   onclick="setMode('all')">🌍 Allar tölur</button>
+  <button class="mode-btn"        id="btn-game"  onclick="setMode('game')">🎮 Leikur</button>
+  <button class="mode-btn"        id="btn-table" onclick="setMode('table')">📊 Taflan</button>
+</div>
+
+<div class="table-select" id="table-select"></div>
+
+<!-- ── ÆFING ── -->
+<div id="quiz-section">
+  <div class="quiz-card">
+    <div class="question-display" id="q-text">? × ? = ?</div>
+    <div class="input-row">
+      <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9]*" id="answer-input" placeholder="?" autocomplete="off" maxlength="3"/>
+      <button class="check-btn" onclick="checkAnswer()">✓</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="streak-display" id="streak-disp"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQ()">Næsta spurning →</button>
+    <div class="stats-row">
+      <div class="stat-chip">✅ <span class="num" id="sc-r">0</span></div>
+      <div class="stat-chip">❌ <span class="num" id="sc-w">0</span></div>
+      <div class="stat-chip">🎯 <span class="num" id="sc-p">-</span></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="prog"></div></div>
+  </div>
+</div>
+
+<!-- ── ALLAR TÖLUR ── -->
+<div id="all-section" style="display:none">
+  <div class="quiz-card">
+    <div class="all-badge">🌍 Allar tölur</div>
+    <div class="question-display" id="aq-text">? × ? = ?</div>
+    <div class="input-row">
+      <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9]*" id="all-input" placeholder="?" autocomplete="off" maxlength="3"/>
+      <button class="check-btn" onclick="checkAll()">✓</button>
+    </div>
+    <div class="feedback" id="all-feedback"></div>
+    <div class="streak-display" id="all-streak-disp"></div>
+    <button class="next-btn" id="all-next-btn" onclick="nextAllQ()">Næsta spurning →</button>
+    <div class="stats-row">
+      <div class="stat-chip">✅ <span class="num" id="asc-r">0</span></div>
+      <div class="stat-chip">❌ <span class="num" id="asc-w">0</span></div>
+      <div class="stat-chip">🎯 <span class="num" id="asc-p">-</span></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="all-prog"></div></div>
+    <div class="round-info" id="round-info"></div>
+  </div>
+</div>
+
+<!-- ── LEIKUR ── -->
+<div id="game-section" style="display:none">
+  <div class="game-card">
+
+    <div class="overlay" id="game-overlay">
+      <div class="ov-emoji"  id="ov-emoji">🎉</div>
+      <div class="ov-title"  id="ov-title"></div>
+      <div class="ov-stars"  id="ov-stars"></div>
+      <div class="ov-sub"    id="ov-sub"></div>
+      <button class="ov-btn" id="ov-btn" onclick="overlayAction()">Áfram!</button>
+    </div>
+
+    <div class="level-banner">
+      <div class="level-label" id="g-level">Stig 1</div>
+      <div class="level-name"  id="g-levelname">Byrjandi 🐣</div>
+    </div>
+
+    <div class="lives-row" id="lives-row"></div>
+    <div class="star-bar"  id="star-bar"></div>
+
+    <div class="timer-wrap"><div class="timer-fill" id="timer-fill"></div></div>
+
+    <div class="game-q" id="g-q">? × ?</div>
+    <div class="choices" id="choices"></div>
+    <div class="game-feedback" id="g-feedback"></div>
+
+    <div class="game-footer">
+      <div class="gf-chip">⭐ <span class="num" id="g-total-stars">0</span></div>
+      <div class="gf-chip">🎯 <span class="num" id="g-pct">-</span></div>
+      <div class="gf-chip">🔢 <span class="num" id="g-answered">0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TAFLAN ── -->
+<div id="table-section" style="display:none">
+  <div class="table-grid" id="table-grid"></div>
+</div>
+
+<div class="confetti-container" id="conf-wrap"></div>
+
+<script>
+/* ══════════════════════════════════════
+   SHARED
+══════════════════════════════════════ */
+let mode = 'quiz';
+const COLORS = ['#FF6B6B','#FFD93D','#6ECFFF','#6BFFB8','#C678FF','#FF9F40'];
+const OK_MSG = ['Snillingur! 🌟','Æðislegt! 🚀','Nákvæmlega! 🎯','Frábært! 🏆','Algjört stórmerki! ⭐','Þetta er rétt! 🥳'];
+const NO_MSG = ['Reyndu aftur! 💪','Svona nálægt! 🤔','Ekki alveg! 🔄','Gefðu þér! 😊'];
+
+// Build table selector
+let sel = 3;
+const tblWrap = document.getElementById('table-select');
+for (let i = 1; i <= 10; i++) {
+  const b = document.createElement('button');
+  b.className = 'tbl-btn' + (i === sel ? ' active' : '');
+  b.textContent = i;
+  b.onclick = () => selectTable(i);
+  tblWrap.appendChild(b);
+}
+
+function selectTable(n) {
+  sel = n;
+  document.querySelectorAll('.tbl-btn').forEach((b,i) => b.classList.toggle('active', i+1===n));
+  qRight=0; qWrong=0; qTotal=0; qStreak=0; updateQStats();
+  if (mode==='quiz') nextQ();
+  else if (mode==='table') renderTable();
+}
+
+function setMode(m) {
+  mode = m;
+  ['quiz','all','game','table'].forEach(k => {
+    document.getElementById('btn-'+k).classList.toggle('active', k===m);
+    document.getElementById(k+'-section').style.display = k===m ? 'block' : 'none';
+  });
+  document.getElementById('table-select').style.display =
+    (m==='quiz'||m==='table') ? 'flex' : 'none';
+  if      (m==='quiz')  nextQ();
+  else if (m==='all')   { buildAllQueue(); nextAllQ(); }
+  else if (m==='game')  startGame();
+  else                  renderTable();
+}
+
+function spawnConfetti(big) {
+  const c = document.getElementById('conf-wrap');
+  const n = big ? 100 : 45;
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'cp';
+    el.style.cssText = `left:${Math.random()*100}vw;` +
+      `background:${COLORS[Math.floor(Math.random()*COLORS.length)]};` +
+      `animation-duration:${0.9+Math.random()*1.4}s;` +
+      `animation-delay:${Math.random()*0.5}s;` +
+      `border-radius:${Math.random()>.5?'50%':'3px'}`;
+    c.appendChild(el);
+    setTimeout(() => el.remove(), 2900);
+  }
+}
+
+/* ══════════════════════════════════════
+   ÆFING — SINGLE TABLE
+══════════════════════════════════════ */
+let qCur=null, qAnswered=false, qStreak=0, qRight=0, qWrong=0, qTotal=0;
+
+function nextQ() {
+  qAnswered = false;
+  const b = Math.floor(Math.random()*10)+1;
+  const sw = Math.random()>.5;
+  qCur = sw ? {a:b, b:sel, ans:b*sel} : {a:sel, b:b, ans:sel*b};
+  document.getElementById('q-text').innerHTML =
+    `<span class="a">${qCur.a}</span> × <span class="b">${qCur.b}</span> = ?`;
+  const inp = document.getElementById('answer-input');
+  inp.value=''; inp.className=''; inp.focus();
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('next-btn').style.display='none';
+  document.getElementById('streak-disp').textContent = qStreak>=3 ? `🔥 ${qStreak} í röð!` : '';
+}
+
+function checkAnswer() {
+  if (qAnswered) return;
+  const inp = document.getElementById('answer-input');
+  const val = parseInt(inp.value.replace(/[^0-9]/g,''), 10);
+  if (isNaN(val) || inp.value.trim()==='') { inp.focus(); return; }
+  qAnswered=true; qTotal++;
+  const fb = document.getElementById('feedback');
+  if (val===qCur.ans) {
+    qRight++; qStreak++;
+    inp.className='correct';
+    fb.textContent=OK_MSG[Math.floor(Math.random()*OK_MSG.length)];
+    fb.className='feedback ok';
+    if (qStreak>=3) spawnConfetti(false);
+    updateQStats(); setTimeout(nextQ, 1100);
+  } else {
+    qWrong++; qStreak=0;
+    inp.className='wrong';
+    fb.innerHTML=`${NO_MSG[Math.floor(Math.random()*NO_MSG.length)]} &mdash; Rétt svar: <strong>${qCur.ans}</strong>`;
+    fb.className='feedback no';
+    document.getElementById('next-btn').style.display='inline-block';
+    updateQStats();
+  }
+  document.getElementById('streak-disp').textContent = qStreak>=3 ? `🔥 ${qStreak} í röð!` : '';
+}
+
+function updateQStats() {
+  document.getElementById('sc-r').textContent=qRight;
+  document.getElementById('sc-w').textContent=qWrong;
+  document.getElementById('sc-p').textContent=qTotal>0 ? Math.round(qRight/qTotal*100)+'%' : '-';
+  document.getElementById('prog').style.width=Math.min((qRight%11)/10*100, 100)+'%';
+}
+
+document.getElementById('answer-input').addEventListener('keydown', e => { if(e.key==='Enter') checkAnswer(); });
+document.getElementById('answer-input').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
+});
+
+/* ══════════════════════════════════════
+   ALLAR TÖLUR
+══════════════════════════════════════ */
+let allQ=null, allAnswered=false, allStreak=0, allRight=0, allWrong=0, allTotal=0;
+let allQueue=[], allQIdx=0;
+
+function buildAllQueue() {
+  allQueue=[];
+  for(let a=1;a<=10;a++) for(let b=1;b<=10;b++) allQueue.push({a,b,ans:a*b});
+  for(let i=allQueue.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [allQueue[i],allQueue[j]]=[allQueue[j],allQueue[i]];
+  }
+  allQIdx=0;
+}
+
+function nextAllQ() {
+  if (allQIdx>=allQueue.length) buildAllQueue();
+  allAnswered=false; allQ=allQueue[allQIdx++];
+  document.getElementById('aq-text').innerHTML=
+    `<span class="a">${allQ.a}</span> × <span class="b">${allQ.b}</span> = ?`;
+  const inp=document.getElementById('all-input');
+  inp.value=''; inp.className=''; inp.focus();
+  document.getElementById('all-feedback').textContent='';
+  document.getElementById('all-feedback').className='feedback';
+  document.getElementById('all-next-btn').style.display='none';
+  document.getElementById('all-streak-disp').textContent=allStreak>=3?`🔥 ${allStreak} í röð!`:'';
+  updateAllRound();
+}
+
+function checkAll() {
+  if (allAnswered) return;
+  const inp=document.getElementById('all-input');
+  const val=parseInt(inp.value.replace(/[^0-9]/g,''),10);
+  if (isNaN(val)||inp.value.trim()===''){inp.focus();return;}
+  allAnswered=true; allTotal++;
+  const fb=document.getElementById('all-feedback');
+  if (val===allQ.ans) {
+    allRight++; allStreak++;
+    inp.className='correct';
+    fb.textContent=OK_MSG[Math.floor(Math.random()*OK_MSG.length)];
+    fb.className='feedback ok';
+    if (allStreak>=3) spawnConfetti(false);
+    updateAllStats(); setTimeout(nextAllQ,1100);
+  } else {
+    allWrong++; allStreak=0;
+    inp.className='wrong';
+    fb.innerHTML=`${NO_MSG[Math.floor(Math.random()*NO_MSG.length)]} &mdash; Rétt svar: <strong>${allQ.ans}</strong>`;
+    fb.className='feedback no';
+    document.getElementById('all-next-btn').style.display='inline-block';
+    updateAllStats();
+  }
+  document.getElementById('all-streak-disp').textContent=allStreak>=3?`🔥 ${allStreak} í röð!`:'';
+}
+
+function updateAllStats() {
+  document.getElementById('asc-r').textContent=allRight;
+  document.getElementById('asc-w').textContent=allWrong;
+  document.getElementById('asc-p').textContent=allTotal>0?Math.round(allRight/allTotal*100)+'%':'-';
+  document.getElementById('all-prog').style.width=Math.round((allQIdx/allQueue.length)*100)+'%';
+  updateAllRound();
+}
+function updateAllRound(){
+  document.getElementById('round-info').textContent=
+    `Spurning ${Math.min(allQIdx,allQueue.length)} / ${allQueue.length} í þessum hring`;
+}
+
+document.getElementById('all-input').addEventListener('keydown', e => { if(e.key==='Enter') checkAll(); });
+
+/* ══════════════════════════════════════
+   LEIKUR 🎮
+   8 stig — safna stjörnum til að fara á næsta stig.
+   Krossalega: fjölval, tímavakt, líf.
+══════════════════════════════════════ */
+
+// Level config: name, emoji, which times-tables, stars needed, lives, seconds per question
+const LEVELS = [
+  { name:'Byrjandi',   emoji:'🐣', tables:[1,2,3],              stars:3, lives:3, time:15 },
+  { name:'Nemandi',    emoji:'📚', tables:[2,3,4,5],            stars:4, lives:3, time:13 },
+  { name:'Þjálfari',   emoji:'⚡', tables:[3,4,5,6],            stars:5, lives:3, time:11 },
+  { name:'Meistari',   emoji:'🥋', tables:[4,5,6,7,8],          stars:5, lives:3, time:10 },
+  { name:'Snillingur', emoji:'🧠', tables:[5,6,7,8,9],          stars:6, lives:3, time:9  },
+  { name:'Stjarnan',   emoji:'🌟', tables:[6,7,8,9,10],         stars:6, lives:3, time:8  },
+  { name:'Hetja',      emoji:'🦸', tables:[1,2,3,4,5,6,7,8,9,10], stars:7, lives:3, time:7 },
+  { name:'Goðsögn',    emoji:'🏆', tables:[1,2,3,4,5,6,7,8,9,10], stars:8, lives:3, time:6 },
+];
+
+let gLevel=0, gStars=0, gLives=3, gTotalStars=0;
+let gAnswered=false, gRight=0, gAnsweredTotal=0;
+let gCurQ=null;
+let gTimerInterval=null, gTimeLeft=0, gTimeSec=15;
+let gOverlayMode=''; // 'levelup' | 'gameover' | 'win'
+
+function startGame() {
+  gLevel=0; gTotalStars=0; gRight=0; gAnsweredTotal=0;
+  startLevel();
+}
+
+function startLevel() {
+  const lv=LEVELS[gLevel];
+  gStars=0; gLives=lv.lives; gTimeSec=lv.time; gAnswered=false;
+  hideOverlay();
+  renderGameUI();
+  newGameQ();
+}
+
+function renderGameUI() {
+  const lv=LEVELS[gLevel];
+  document.getElementById('g-level').textContent=`Stig ${gLevel+1}`;
+  document.getElementById('g-levelname').textContent=`${lv.name} ${lv.emoji}`;
+
+  // lives
+  const lr=document.getElementById('lives-row');
+  lr.innerHTML='';
+  for(let i=0;i<lv.lives;i++){
+    const h=document.createElement('span');
+    h.className='heart'; h.textContent='❤️'; h.id=`heart-${i}`;
+    lr.appendChild(h);
+  }
+
+  // star bar
+  const sb=document.getElementById('star-bar');
+  sb.innerHTML='';
+  for(let i=0;i<lv.stars;i++){
+    const s=document.createElement('span');
+    s.className='star-slot'; s.textContent='⭐'; s.id=`gstar-${i}`;
+    sb.appendChild(s);
+  }
+  updateGameFooter();
+}
+
+function newGameQ() {
+  if (gTimerInterval) clearInterval(gTimerInterval);
+  gAnswered=false;
+  document.getElementById('g-feedback').textContent='';
+  document.getElementById('g-feedback').className='game-feedback';
+
+  const lv=LEVELS[gLevel];
+  const t=lv.tables[Math.floor(Math.random()*lv.tables.length)];
+  const b=Math.floor(Math.random()*10)+1;
+  const sw=Math.random()>.5;
+  gCurQ = sw ? {a:b,b:t,ans:b*t} : {a:t,b:b,ans:t*b};
+
+  document.getElementById('g-q').innerHTML=
+    `<span class="a">${gCurQ.a}</span> × <span class="b">${gCurQ.b}</span>`;
+
+  renderChoices(makeChoices(gCurQ.ans));
+
+  // timer
+  gTimeLeft=gTimeSec;
+  updateTimerBar(1);
+  document.getElementById('timer-fill').classList.remove('danger');
+  gTimerInterval=setInterval(tickTimer,100);
+}
+
+function makeChoices(correct) {
+  // generate plausible distractors near the correct answer
+  const candidates=new Set([correct]);
+  const deltas=[-5,-4,-3,-2,-1,1,2,3,4,5,6,-6,10,-10];
+  deltas.forEach(d=>{ const v=correct+d; if(v>0) candidates.add(v); });
+  // also add a few random ones
+  while(candidates.size<10) candidates.add(Math.floor(Math.random()*98)+2);
+  const wrongs=[...candidates].filter(v=>v!==correct).sort(()=>Math.random()-.5).slice(0,3);
+  return [correct,...wrongs].sort(()=>Math.random()-.5);
+}
+
+function renderChoices(choices) {
+  const box=document.getElementById('choices');
+  box.innerHTML='';
+  choices.forEach(val=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn';
+    btn.textContent=val;
+    btn.onclick=()=>pickChoice(val,btn);
+    box.appendChild(btn);
+  });
+}
+
+function tickTimer() {
+  gTimeLeft-=0.1;
+  const frac=Math.max(0,gTimeLeft/gTimeSec);
+  updateTimerBar(frac);
+  if(frac<0.33) document.getElementById('timer-fill').classList.add('danger');
+  if(gTimeLeft<=0){ clearInterval(gTimerInterval); timeUp(); }
+}
+
+function updateTimerBar(frac){
+  document.getElementById('timer-fill').style.width=(frac*100)+'%';
+}
+
+function timeUp() {
+  if(gAnswered) return;
+  gAnswered=true; gAnsweredTotal++;
+  revealCorrect();
+  document.getElementById('g-feedback').textContent='Tíminn rann út! ⏰';
+  document.getElementById('g-feedback').className='game-feedback no';
+  loseLife();
+}
+
+function pickChoice(val, btn) {
+  if(gAnswered) return;
+  clearInterval(gTimerInterval);
+  gAnswered=true; gAnsweredTotal++;
+
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
+
+  if(val===gCurQ.ans) {
+    btn.classList.add('correct-choice');
+    gRight++; gStars++; gTotalStars++;
+    document.getElementById('g-feedback').textContent=OK_MSG[Math.floor(Math.random()*OK_MSG.length)];
+    document.getElementById('g-feedback').className='game-feedback ok';
+    updateGameFooter();
+    earnStar(gStars-1);
+
+    if(gStars>=LEVELS[gLevel].stars){
+      setTimeout(()=>{ spawnConfetti(true); triggerLevelUp(); }, 700);
+    } else {
+      setTimeout(newGameQ, 1100);
+    }
+  } else {
+    btn.classList.add('wrong-choice');
+    revealCorrect();
+    document.getElementById('g-feedback').innerHTML=
+      `${NO_MSG[Math.floor(Math.random()*NO_MSG.length)]} &mdash; Rétt: <strong>${gCurQ.ans}</strong>`;
+    document.getElementById('g-feedback').className='game-feedback no';
+    loseLife();
+  }
+}
+
+function revealCorrect(){
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(+b.textContent===gCurQ.ans) b.classList.add('correct-choice');
+  });
+}
+
+function earnStar(idx) {
+  const el=document.getElementById(`gstar-${idx}`);
+  if(!el) return;
+  el.classList.add('earned');
+  void el.offsetWidth;
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
+function loseLife() {
+  gLives--;
+  const lv=LEVELS[gLevel];
+  // hearts are indexed 0..lives-1; remove from the right
+  const deadIdx=lv.lives-1-(lv.lives-1-gLives);
+  const h=document.getElementById(`heart-${deadIdx}`);
+  if(h) h.classList.add('lost');
+  if(gLives<=0){ setTimeout(triggerGameOver, 900); }
+  else { setTimeout(newGameQ, 1200); }
+}
+
+function triggerLevelUp() {
+  clearInterval(gTimerInterval);
+  if(gLevel>=LEVELS.length-1){ triggerWin(); return; }
+  gOverlayMode='levelup';
+  const next=LEVELS[gLevel+1];
+  document.getElementById('ov-emoji').textContent='🎉';
+  document.getElementById('ov-title').innerHTML=`Stig ${gLevel+1} klárað!`;
+  document.getElementById('ov-stars').textContent='⭐'.repeat(gStars);
+  document.getElementById('ov-sub').innerHTML=
+    `Næst: <strong>${next.name} ${next.emoji}</strong><br>Þú þarft ${next.stars} ⭐ á ${next.time} sek.`;
+  document.getElementById('ov-btn').textContent='Áfram! →';
+  document.getElementById('game-overlay').classList.add('show');
+}
+
+function triggerGameOver() {
+  clearInterval(gTimerInterval);
+  gOverlayMode='gameover';
+  document.getElementById('ov-emoji').textContent='😢';
+  document.getElementById('ov-title').textContent='Leik lokið!';
+  document.getElementById('ov-stars').textContent='';
+  document.getElementById('ov-sub').innerHTML=`<span class="ov-motto">Reyndu aftur því æfingin skapar meistarann</span><br><br>Þú náðir ${gTotalStars} stjörnum ⭐`;
+  document.getElementById('ov-btn').textContent='Reyna aftur 🔄';
+  document.getElementById('game-overlay').classList.add('show');
+}
+
+function triggerWin() {
+  clearInterval(gTimerInterval);
+  gOverlayMode='win';
+  spawnConfetti(true);
+  document.getElementById('ov-emoji').textContent='🏆';
+  document.getElementById('ov-title').textContent='Goðsögn! Þú kláraðir allt!';
+  document.getElementById('ov-stars').textContent='⭐'.repeat(gTotalStars);
+  document.getElementById('ov-sub').textContent=`Öll ${LEVELS.length} stig kláruð — ótrúlegt!`;
+  document.getElementById('ov-btn').textContent='Spila aftur 🎮';
+  document.getElementById('game-overlay').classList.add('show');
+}
+
+function hideOverlay(){ document.getElementById('game-overlay').classList.remove('show'); }
+
+function overlayAction(){
+  if(gOverlayMode==='levelup'){ gLevel++; startLevel(); }
+  else { startGame(); }
+}
+
+function updateGameFooter(){
+  document.getElementById('g-total-stars').textContent=gTotalStars;
+  document.getElementById('g-pct').textContent=gAnsweredTotal>0?Math.round(gRight/gAnsweredTotal*100)+'%':'-';
+  document.getElementById('g-answered').textContent=gAnsweredTotal;
+}
+
+/* ══════════════════════════════════════
+   TAFLAN
+══════════════════════════════════════ */
+function renderTable(){
+  const grid=document.getElementById('table-grid');
+  grid.innerHTML='';
+  for(let i=1;i<=10;i++){
+    const cell=document.createElement('div');
+    cell.className='tg-cell';
+    cell.innerHTML=`<div class="small">${sel} × ${i}</div><div class="big">${sel*i}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+/* ── INIT ── */
+nextQ();
+</script>
+</body>
+</html>
