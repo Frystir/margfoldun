@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Margföldunartaflan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --sky: #6ECFFF;
+    --sun: #FFD93D;
+    --coral: #FF6B6B;
+    --mint: #6BFFB8;
+    --purple: #C678FF;
+    --bg: #FFF8F0;
+    --shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+    background-image:
+      radial-gradient(circle at 15% 15%, rgba(110,207,255,0.18) 0%, transparent 50%),
+      radial-gradient(circle at 85% 85%, rgba(198,120,255,0.14) 0%, transparent 50%);
+  }
+
+  h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.6rem;
+    color: var(--coral);
+    text-shadow: 3px 3px 0 rgba(255,107,107,0.18);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #999;
+    margin-bottom: 22px;
+    font-weight: 700;
+  }
+
+  .mode-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .mode-btn {
+    padding: 9px 22px;
+    border-radius: 50px;
+    border: 2px solid #E0E0E0;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #666;
+  }
+
+  .mode-btn.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: white;
+    box-shadow: 0 4px 14px rgba(198,120,255,0.35);
+  }
+
+  .table-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 26px;
+    max-width: 480px;
+  }
+
+  .tbl-btn {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    border: 3px solid transparent;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(.34,1.56,.64,1);
+    background: white;
+    color: #333;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.09);
+  }
+
+  .tbl-btn:hover { transform: scale(1.15); }
+
+  .tbl-btn.active {
+    background: var(--coral);
+    color: white;
+    border-color: #e04040;
+    transform: scale(1.2);
+    box-shadow: 0 6px 18px rgba(255,107,107,0.4);
+  }
+
+  .quiz-card {
+    background: white;
+    border-radius: 28px;
+    padding: 36px 40px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    max-width: 420px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quiz-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 130px; height: 130px;
+    background: radial-gradient(circle, rgba(255,217,61,0.28), transparent 70%);
+    border-radius: 50%;
+  }
+
+  .question-display {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3.2rem;
+    color: #2D2D2D;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+
+  .question-display .a { color: var(--coral); }
+  .question-display .b { color: var(--purple); }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    margin: 18px 0 8px;
+  }
+
+  #answer-input {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    width: 120px;
+    text-align: center;
+    border: 3px solid #E8E8E8;
+    border-radius: 16px;
+    padding: 10px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    color: #2D2D2D;
+    background: #FAFAFA;
+  }
+
+  #answer-input:focus {
+    border-color: var(--sky);
+    box-shadow: 0 0 0 4px rgba(110,207,255,0.25);
+    background: white;
+  }
+
+  #answer-input.correct {
+    border-color: var(--mint);
+    background: #f0fff8;
+    box-shadow: 0 0 0 4px rgba(107,255,184,0.3);
+  }
+
+  #answer-input.wrong {
+    border-color: var(--coral);
+    background: #fff5f5;
+    animation: shake 0.35s ease;
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-5px); }
+  }
+
+  .check-btn {
+    background: var(--sun);
+    border: none;
+    border-radius: 14px;
+    width: 56px; height: 56px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,217,61,0.4);
+    transition: transform 0.15s;
+  }
+
+  .check-btn:hover { transform: scale(1.1); }
+
+  .feedback {
+    min-height: 30px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-top: 6px;
+    color: #2D2D2D;
+  }
+
+  .feedback.ok { color: #22c97e; }
+  .feedback.no { color: var(--coral); }
+
+  .streak-display {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    color: var(--sun);
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.12);
+    min-height: 22px;
+    margin-top: 4px;
+  }
+
+  .next-btn {
+    margin-top: 14px;
+    padding: 10px 28px;
+    background: linear-gradient(135deg, var(--sky), #4a8fe2);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(78,145,226,0.35);
+    transition: transform 0.15s;
+    display: none;
+  }
+
+  .next-btn:hover { transform: translateY(-2px); }
+
+  .stats-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .stat-chip {
+    background: #F4F4F4;
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .stat-chip .num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: #2D2D2D;
+  }
+
+  .progress-wrap {
+    width: 100%;
+    height: 10px;
+    background: #EEE;
+    border-radius: 10px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sky), var(--purple));
+    border-radius: 10px;
+    transition: width 0.4s cubic-bezier(.34,1.56,.64,1);
+    width: 0%;
+  }
+
+  /* TABLE VIEW */
+  .table-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    max-width: 420px;
+    width: 100%;
+  }
+
+  .tg-cell {
+    background: white;
+    border-radius: 14px;
+    padding: 12px 6px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: background 0.2s, transform 0.15s;
+    cursor: default;
+  }
+
+  .tg-cell:hover {
+    background: var(--sun);
+    transform: scale(1.06);
+  }
+
+  .tg-cell .small { font-size: 0.7rem; color: #aaa; font-weight: 700; }
+  .tg-cell .big {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: #2D2D2D;
+  }
+
+  /* CONFETTI */
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .cp {
+    position: absolute;
+    width: 11px; height: 11px;
+    border-radius: 3px;
+    animation: cfall linear forwards;
+  }
+
+  @keyframes cfall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🔢 Margföldunartaflan</h1>
+<p class="subtitle">Vertu stjarnan í tímanum! ⭐</p>
+
+<div class="mode-row">
+  <button class="mode-btn active" id="btn-quiz" onclick="setMode('quiz')">🎯 Æfing</button>
+  <button class="mode-btn" id="btn-table" onclick="setMode('table')">📊 Taflan</button>
+</div>
+
+<div class="table-select" id="table-select"></div>
+
+<div id="quiz-section">
+  <div class="quiz-card">
+    <div class="question-display" id="q-text">? × ? = ?</div>
+    <div class="input-row">
+      <input type="number" id="answer-input" placeholder="?" min="0" max="200" autocomplete="off" />
+      <button class="check-btn" onclick="checkAnswer()">✓</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="streak-display" id="streak-disp"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQ()">Næsta spurning →</button>
+    <div class="stats-row">
+      <div class="stat-chip">✅ <span class="num" id="sc-r">0</span></div>
+      <div class="stat-chip">❌ <span class="num" id="sc-w">0</span></div>
+      <div class="stat-chip">🎯 <span class="num" id="sc-p">-</span></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="prog"></div></div>
+  </div>
+</div>
+
+<div id="table-section" style="display:none">
+  <div class="table-grid" id="table-grid"></div>
+</div>
+
+<div class="confetti-container" id="conf-wrap"></div>
+
+<script>
+let sel = 3, curQ = null, answered = false;
+let streak = 0, right = 0, wrong = 0, total = 0, mode = 'quiz';
+
+const COLORS = ['#FF6B6B','#FFD93D','#6ECFFF','#6BFFB8','#C678FF','#FF9F40'];
+const OK_MSG = ['Snillingur! 🌟','Æðislegt! 🚀','Nákvæmlega! 🎯','Frábært! 🏆','Algjört stórmerki! ⭐','Þetta er rétt! 🥳'];
+const NO_MSG = ['Reyndu aftur! 💪','Svona nálægt! 🤔','Ekki alveg! 🔄','Gefðu þér! 😊'];
+
+// build table buttons
+const wrap = document.getElementById('table-select');
+for (let i = 1; i <= 10; i++) {
+  const b = document.createElement('button');
+  b.className = 'tbl-btn' + (i === sel ? ' active' : '');
+  b.textContent = i;
+  b.onclick = () => selectTable(i);
+  wrap.appendChild(b);
+}
+
+function selectTable(n) {
+  sel = n;
+  document.querySelectorAll('.tbl-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === n));
+  right = 0; wrong = 0; total = 0; streak = 0;
+  updateStats();
+  if (mode === 'quiz') nextQ(); else renderTable();
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-quiz').classList.toggle('active', m === 'quiz');
+  document.getElementById('btn-table').classList.toggle('active', m === 'table');
+  document.getElementById('quiz-section').style.display = m === 'quiz' ? 'block' : 'none';
+  document.getElementById('table-section').style.display = m === 'table' ? 'block' : 'none';
+  if (m === 'quiz') nextQ(); else renderTable();
+}
+
+function nextQ() {
+  answered = false;
+  const b = Math.floor(Math.random() * 10) + 1;
+  const sw = Math.random() > 0.5;
+  curQ = sw ? { a: b, b: sel, ans: b * sel } : { a: sel, b: b, ans: sel * b };
+
+  document.getElementById('q-text').innerHTML =
+    `<span class="a">${curQ.a}</span> × <span class="b">${curQ.b}</span> = ?`;
+
+  const inp = document.getElementById('answer-input');
+  inp.value = ''; inp.className = ''; inp.focus();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('streak-disp').textContent = streak >= 3 ? `🔥 ${streak} í röð!` : '';
+}
+
+function checkAnswer() {
+  if (answered) return;
+  const inp = document.getElementById('answer-input');
+  const val = parseInt(inp.value, 10);
+  if (isNaN(val)) { inp.focus(); return; }
+  answered = true;
+  total++;
+  const fb = document.getElementById('feedback');
+
+  if (val === curQ.ans) {
+    right++; streak++;
+    inp.className = 'correct';
+    fb.textContent = OK_MSG[Math.floor(Math.random() * OK_MSG.length)];
+    fb.className = 'feedback ok';
+    if (streak >= 3) spawnConfetti();
+    updateStats();
+    setTimeout(nextQ, 1100);
+  } else {
+    wrong++; streak = 0;
+    inp.className = 'wrong';
+    fb.innerHTML = `${NO_MSG[Math.floor(Math.random() * NO_MSG.length)]} &mdash; Rétt svar: <strong>${curQ.ans}</strong>`;
+    fb.className = 'feedback no';
+    document.getElementById('next-btn').style.display = 'inline-block';
+    updateStats();
+  }
+  document.getElementById('streak-disp').textContent = streak >= 3 ? `🔥 ${streak} í röð!` : '';
+}
+
+function updateStats() {
+  document.getElementById('sc-r').textContent = right;
+  document.getElementById('sc-w').textContent = wrong;
+  document.getElementById('sc-p').textContent = total > 0 ? Math.round(right / total * 100) + '%' : '-';
+  document.getElementById('prog').style.width = Math.min((right % 11) / 10 * 100, 100) + '%';
+}
+
+function spawnConfetti() {
+  const c = document.getElementById('conf-wrap');
+  for (let i = 0; i < 45; i++) {
+    const el = document.createElement('div');
+    el.className = 'cp';
+    el.style.cssText = `left:${Math.random()*100}vw;background:${COLORS[Math.floor(Math.random()*COLORS.length)]};animation-duration:${0.9+Math.random()*1.2}s;animation-delay:${Math.random()*0.4}s;border-radius:${Math.random()>.5?'50%':'3px'}`;
+    c.appendChild(el);
+    setTimeout(() => el.remove(), 2600);
+  }
+}
+
+function renderTable() {
+  const grid = document.getElementById('table-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'tg-cell';
+    cell.innerHTML = `<div class="small">${sel} × ${i}</div><div class="big">${sel * i}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+document.getElementById('answer-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkAnswer();
+});
+
+nextQ();
+</script>
+</body>
+</html>
