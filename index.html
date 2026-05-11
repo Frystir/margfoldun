@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stærðfræðiæfingar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --sky: #6ECFFF;
+    --sun: #FFD93D;
+    --coral: #FF6B6B;
+    --mint: #6BFFB8;
+    --purple: #C678FF;
+    --green: #4CAF50;
+    --bg: #FFF8F0;
+    --shadow: 0 4px 20px rgba(0,0,0,0.12);
+
+    /* Per-tab accent colors */
+    --add-color: #4CAF50;
+    --sub-color: #FF6B6B;
+    --mul-color: #C678FF;
+    --div-color: #6ECFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+    background-image:
+      radial-gradient(circle at 15% 15%, rgba(110,207,255,0.18) 0%, transparent 50%),
+      radial-gradient(circle at 85% 85%, rgba(198,120,255,0.14) 0%, transparent 50%);
+  }
+
+  h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.4rem;
+    color: var(--coral);
+    text-shadow: 3px 3px 0 rgba(255,107,107,0.18);
+    margin-bottom: 2px;
+    text-align: center;
+  }
+  .subtitle { font-size: 0.95rem; color: #999; margin-bottom: 18px; font-weight: 700; }
+
+  /* ── OP TABS ── */
+  .op-tabs {
+    display: flex; gap: 0; margin-bottom: 22px;
+    background: white; border-radius: 20px;
+    box-shadow: var(--shadow); padding: 5px; width: 100%; max-width: 480px;
+  }
+  .op-tab {
+    flex: 1; padding: 10px 6px; border-radius: 15px;
+    border: none; background: transparent;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    cursor: pointer; transition: all 0.2s; color: #aaa;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .op-tab .tab-icon { font-size: 1.3rem; }
+  .op-tab .tab-label { font-size: 0.75rem; }
+  .op-tab.active {
+    color: white;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  }
+  .op-tab[data-op="add"].active    { background: var(--add-color); }
+  .op-tab[data-op="sub"].active    { background: var(--sub-color); }
+  .op-tab[data-op="mul"].active    { background: var(--mul-color); }
+  .op-tab[data-op="div"].active    { background: var(--div-color); color: #333; }
+
+  /* ── OP CONTENT ── */
+  .op-content { display: none; width: 100%; max-width: 480px; flex-direction: column; align-items: center; }
+  .op-content.active { display: flex; }
+
+  /* ── NAV ── */
+  .mode-row {
+    display: flex; gap: 8px; margin-bottom: 18px;
+    flex-wrap: wrap; justify-content: center; width: 100%;
+  }
+  .mode-btn {
+    padding: 9px 20px; border-radius: 50px;
+    border: 2px solid #E0E0E0; background: white;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.88rem;
+    cursor: pointer; transition: all 0.15s; color: #666;
+  }
+  .mode-btn.active { color: white; border-color: transparent;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  }
+  /* Active mode btn color per op */
+  .op-content[data-op="add"] .mode-btn.active { background: var(--add-color); }
+  .op-content[data-op="sub"] .mode-btn.active { background: var(--sub-color); }
+  .op-content[data-op="mul"] .mode-btn.active { background: var(--mul-color); }
+  .op-content[data-op="div"] .mode-btn.active { background: var(--div-color); color: #333; }
+
+  /* ── TABLE SELECTOR ── */
+  .table-select {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center; margin-bottom: 22px; max-width: 480px; width: 100%;
+  }
+  .tbl-btn {
+    width: 48px; height: 48px; border-radius: 14px;
+    border: 3px solid transparent;
+    font-family: 'Fredoka One', cursive; font-size: 1.2rem;
+    cursor: pointer; transition: all 0.18s cubic-bezier(.34,1.56,.64,1);
+    background: white; color: #333; box-shadow: 0 3px 10px rgba(0,0,0,0.09);
+  }
+  .tbl-btn:hover { transform: scale(1.15); }
+  .tbl-btn.active {
+    color: white; border-color: rgba(0,0,0,0.1);
+    transform: scale(1.2); box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  }
+  .op-content[data-op="add"] .tbl-btn.active { background: var(--add-color); }
+  .op-content[data-op="sub"] .tbl-btn.active { background: var(--sub-color); }
+  .op-content[data-op="mul"] .tbl-btn.active { background: var(--mul-color); }
+  .op-content[data-op="div"] .tbl-btn.active { background: var(--div-color); color: #333; }
+
+  /* ── QUIZ CARD ── */
+  .quiz-card {
+    background: white; border-radius: 28px; padding: 32px 36px;
+    box-shadow: var(--shadow); text-align: center;
+    max-width: 420px; width: 100%; position: relative; overflow: hidden;
+  }
+  .quiz-card::before {
+    content: ''; position: absolute; top: -30px; right: -30px;
+    width: 130px; height: 130px;
+    background: radial-gradient(circle, rgba(255,217,61,0.28), transparent 70%);
+    border-radius: 50%;
+  }
+  .question-display {
+    font-family: 'Fredoka One', cursive; font-size: 3rem;
+    color: #2D2D2D; margin-bottom: 10px; letter-spacing: 1px;
+  }
+  .question-display .a { color: var(--coral); }
+  .question-display .b { color: var(--purple); }
+  .question-display .op-sym { color: #999; }
+
+  .input-row { display: flex; gap: 12px; justify-content: center; align-items: center; margin: 16px 0 8px; }
+
+  .ans-input {
+    font-family: 'Fredoka One', cursive; font-size: 2rem; width: 90px;
+    text-align: center; border: 3px solid #E8E8E8; border-radius: 16px;
+    padding: 10px 4px; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    color: #2D2D2D; background: #FAFAFA;
+  }
+  .ans-input:focus { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(110,207,255,0.25); background: white; }
+  .ans-input.correct { border-color: var(--mint); background: #f0fff8; box-shadow: 0 0 0 4px rgba(107,255,184,0.3); }
+  .ans-input.wrong { border-color: var(--coral); background: #fff5f5; animation: shake 0.35s ease; }
+  .ans-input::-webkit-outer-spin-button,
+  .ans-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .ans-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-5px); }
+  }
+
+  .check-btn {
+    background: var(--sun); border: none; border-radius: 14px;
+    width: 56px; height: 56px; font-size: 1.6rem; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,217,61,0.4); transition: transform 0.15s;
+  }
+  .check-btn:hover { transform: scale(1.1); }
+
+  .feedback { min-height: 30px; font-size: 1.05rem; font-weight: 800; margin-top: 6px; color: #2D2D2D; }
+  .feedback.ok { color: #22c97e; }
+  .feedback.no { color: var(--coral); }
+
+  .streak-display {
+    font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+    color: var(--sun); text-shadow: 1px 1px 0 rgba(0,0,0,0.12);
+    min-height: 22px; margin-top: 4px;
+  }
+  .next-btn {
+    margin-top: 14px; padding: 10px 28px;
+    background: linear-gradient(135deg, var(--sky), #4a8fe2);
+    border: none; border-radius: 50px; color: white;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.95rem;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(78,145,226,0.35);
+    transition: transform 0.15s; display: none;
+  }
+  .next-btn:hover { transform: translateY(-2px); }
+
+  .stats-row { display: flex; gap: 14px; justify-content: center; margin-top: 20px; }
+  .stat-chip {
+    background: #F4F4F4; border-radius: 50px; padding: 6px 16px;
+    font-weight: 800; font-size: 0.9rem; color: #555;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .stat-chip .num { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #2D2D2D; }
+
+  .progress-wrap { width: 100%; height: 10px; background: #EEE; border-radius: 10px; margin-top: 14px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--sky), var(--purple)); border-radius: 10px; transition: width 0.4s cubic-bezier(.34,1.56,.64,1); width: 0%; }
+
+  /* ── ALL MODE ── */
+  .all-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #6ECFFF, #C678FF);
+    color: white; font-family: 'Fredoka One', cursive; font-size: 1rem;
+    padding: 5px 18px; border-radius: 50px; margin-bottom: 14px;
+    box-shadow: 0 3px 10px rgba(110,207,255,0.35);
+  }
+  .round-info { margin-top: 10px; font-size: 0.82rem; color: #bbb; font-weight: 700; min-height: 18px; }
+
+  /* ── TABLE GRID ── */
+  .table-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 8px; max-width: 420px; width: 100%;
+  }
+  .tg-cell {
+    background: white; border-radius: 14px; padding: 12px 6px;
+    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: background 0.2s, transform 0.15s;
+  }
+  .tg-cell:hover { background: var(--sun); transform: scale(1.06); }
+  .tg-cell .small { font-size: 0.7rem; color: #aaa; font-weight: 700; }
+  .tg-cell .big { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: #2D2D2D; }
+
+  /* ══════════════════════════════════════
+     GAME MODE
+  ══════════════════════════════════════ */
+  .game-section-inner { width: 100%; max-width: 460px; }
+
+  .game-card {
+    background: white; border-radius: 28px; padding: 26px 30px 30px;
+    box-shadow: var(--shadow); text-align: center; position: relative; overflow: hidden;
+  }
+
+  .overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(255,255,255,0.96); border-radius: 28px;
+    flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10; gap: 10px; padding: 24px;
+  }
+  .overlay.show { display: flex; }
+  .ov-emoji { font-size: 4rem; animation: starpop 0.5s ease; }
+  .ov-title {
+    font-family: 'Fredoka One', cursive; font-size: 1.9rem;
+    color: var(--coral); text-align: center; line-height: 1.25;
+  }
+  .ov-sub { font-size: 0.95rem; color: #888; font-weight: 700; text-align: center; }
+  .ov-motto { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: var(--coral); font-style: italic; }
+  .ov-stars { font-size: 1.6rem; letter-spacing: 4px; min-height: 32px; }
+  .ov-btn {
+    margin-top: 10px; padding: 12px 36px;
+    background: linear-gradient(135deg, var(--coral), #ff9f40);
+    border: none; border-radius: 50px; color: white;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.05rem;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(255,107,107,0.4);
+    transition: transform 0.15s;
+  }
+  .ov-btn:hover { transform: scale(1.05); }
+
+  .level-banner {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .level-label { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--purple); }
+  .level-name  { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #999; }
+
+  .lives-row { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; }
+  .heart { font-size: 1.4rem; transition: filter 0.3s, transform 0.2s; }
+  .heart.lost { filter: grayscale(1) opacity(0.3); transform: scale(0.8); }
+
+  .star-bar { display: flex; gap: 5px; justify-content: center; margin-bottom: 14px; }
+  .star-slot {
+    font-size: 1.6rem;
+    filter: grayscale(1) opacity(0.25);
+    transition: filter 0.3s, transform 0.3s;
+  }
+  .star-slot.earned { filter: none; transform: scale(1.15); }
+
+  @keyframes starpop {
+    0%   { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.4) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1.15) rotate(0deg); opacity: 1; }
+  }
+  .star-slot.pop { animation: starpop 0.45s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+  .timer-wrap { width: 100%; height: 8px; background: #EEE; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+  .timer-fill {
+    height: 100%; border-radius: 8px;
+    background: linear-gradient(90deg, #6BFFB8, #6ECFFF);
+    transition: width 0.1s linear, background 0.5s;
+    width: 100%;
+  }
+  .timer-fill.danger { background: linear-gradient(90deg, var(--coral), #FF9F40); }
+
+  .game-q {
+    font-family: 'Fredoka One', cursive; font-size: 3rem;
+    color: #2D2D2D; margin-bottom: 16px; letter-spacing: 1px;
+  }
+  .game-q .a { color: var(--coral); }
+  .game-q .b { color: var(--purple); }
+
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .choice-btn {
+    font-family: 'Fredoka One', cursive; font-size: 2rem;
+    padding: 14px 10px; border-radius: 16px;
+    border: 3px solid #E8E8E8; background: #FAFAFA;
+    cursor: pointer; color: #2D2D2D;
+    transition: all 0.14s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--sky); background: white;
+    box-shadow: 0 0 0 4px rgba(110,207,255,0.25); transform: scale(1.04);
+  }
+  .choice-btn.correct-choice { border-color: var(--mint); background: #f0fff8; color: #1a9966; box-shadow: 0 0 0 4px rgba(107,255,184,0.3); }
+  .choice-btn.wrong-choice   { border-color: var(--coral); background: #fff5f5; color: #cc3030; animation: shake 0.35s ease; }
+  .choice-btn:disabled { cursor: default; }
+
+  .game-feedback { min-height: 26px; font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+  .game-feedback.ok { color: #22c97e; }
+  .game-feedback.no { color: var(--coral); }
+
+  .game-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px; }
+  .gf-chip {
+    background: #F4F4F4; border-radius: 50px; padding: 5px 12px;
+    font-weight: 800; font-size: 0.82rem; color: #555;
+    display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center;
+  }
+  .gf-chip .num { font-family: 'Fredoka One', cursive; font-size: 0.95rem; color: #2D2D2D; }
+
+  /* ── CONFETTI ── */
+  .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
+  .cp { position: absolute; width: 11px; height: 11px; border-radius: 3px; animation: cfall linear forwards; }
+  @keyframes cfall {
+    0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Negative answer badge for subtraction */
+  .neg-hint { font-size: 0.78rem; color: #bbb; font-weight: 700; margin-top: 2px; min-height: 16px; }
+</style>
+</head>
+<body>
+
+<h1>🔢 Stærðfræðiæfingar</h1>
+<p class="subtitle">Vertu stjarnan í tímanum! ⭐</p>
+
+<!-- ── OP TABS ── -->
+<div class="op-tabs">
+  <button class="op-tab active" data-op="add" onclick="switchOp('add')">
+    <span class="tab-icon">➕</span><span class="tab-label">Samlagning</span>
+  </button>
+  <button class="op-tab" data-op="sub" onclick="switchOp('sub')">
+    <span class="tab-icon">➖</span><span class="tab-label">Frádráttur</span>
+  </button>
+  <button class="op-tab" data-op="mul" onclick="switchOp('mul')">
+    <span class="tab-icon">✖️</span><span class="tab-label">Margföldun</span>
+  </button>
+  <button class="op-tab" data-op="div" onclick="switchOp('div')">
+    <span class="tab-icon">➗</span><span class="tab-label">Deiling</span>
+  </button>
+</div>
+
+<!-- ══════════ SAMLAGNING ══════════ -->
+<div class="op-content active" data-op="add" id="op-add">
+  <div class="mode-row">
+    <button class="mode-btn active" id="add-btn-quiz"  onclick="setOpMode('add','quiz')">🎯 Æfing</button>
+    <button class="mode-btn"        id="add-btn-all"   onclick="setOpMode('add','all')">🌍 Allar tölur</button>
+    <button class="mode-btn"        id="add-btn-game"  onclick="setOpMode('add','game')">🎮 Leikur</button>
+    <button class="mode-btn"        id="add-btn-table" onclick="setOpMode('add','table')">📊 Taflan</button>
+  </div>
+  <div class="table-select" id="add-table-select"></div>
+
+  <div id="add-quiz-section">
+    <div class="quiz-card">
+      <div class="question-display" id="add-q-text">? + ? = ?</div>
+      <div class="input-row">
+        <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9\-]*" id="add-answer-input" placeholder="?" autocomplete="off" maxlength="4"/>
+        <button class="check-btn" onclick="checkQ('add')">✓</button>
+      </div>
+      <div class="feedback" id="add-feedback"></div>
+      <div class="streak-display" id="add-streak-disp"></div>
+      <button class="next-btn" id="add-next-btn" onclick="nextQ('add')">Næsta spurning →</button>
+      <div class="stats-row">
+        <div class="stat-chip">✅ <span class="num" id="add-sc-r">0</span></div>
+        <div class="stat-chip">❌ <span class="num" id="add-sc-w">0</span></div>
+        <div class="stat-chip">🎯 <span class="num" id="add-sc-p">-</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="add-prog"></div></div>
+    </div>
+  </div>
+
+  <div id="add-all-section" style="display:none">
+    <div class="quiz-card">
+      <div class="all-badge">🌍 Allar tölur</div>
+      <div class="question-display" id="add-aq-text">? + ? = ?</div>
+      <div class="input-row">
+        <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9\-]*" id="add-all-input" placeholder="?" autocomplete="off" maxlength="4"/>
+        <button class="check-btn" onclick="checkAll('add')">✓</button>
+      </div>
+      <div class="feedback" id="add-all-feedback"></div>
+      <div class="streak-display" id="add-all-streak-disp"></div>
+      <button class="next-btn" id="add-all-next-btn" onclick="nextAllQ('add')">Næsta spurning →</button>
+      <div class="stats-row">
+        <div class="stat-chip">✅ <span class="num" id="add-asc-r">0</span></div>
+        <div class="stat-chip">❌ <span class="num" id="add-asc-w">0</span></div>
+        <div class="stat-chip">🎯 <span class="num" id="add-asc-p">-</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="add-all-prog"></div></div>
+      <div class="round-info" id="add-round-info"></div>
+    </div>
+  </div>
+
+  <div id="add-game-section" style="display:none">
+    <div class="game-section-inner">
+      <div class="game-card">
+        <div class="overlay" id="add-game-overlay">
+          <div class="ov-emoji"  id="add-ov-emoji">🎉</div>
+          <div class="ov-title"  id="add-ov-title"></div>
+          <div class="ov-stars"  id="add-ov-stars"></div>
+          <div class="ov-sub"    id="add-ov-sub"></div>
+          <button class="ov-btn" onclick="overlayAction('add')">Áfram!</button>
+        </div>
+        <div class="level-banner">
+          <div class="level-label" id="add-g-level">Stig 1</div>
+          <div class="level-name"  id="add-g-levelname">Byrjandi 🐣</div>
+        </div>
+        <div class="lives-row" id="add-lives-row"></div>
+        <div class="star-bar"  id="add-star-bar"></div>
+        <div class="timer-wrap"><div class="timer-fill" id="add-timer-fill"></div></div>
+        <div class="game-q" id="add-g-q">? + ?</div>
+        <div class="choices" id="add-choices"></div>
+        <div class="game-feedback" id="add-g-feedback"></div>
+        <div class="game-footer">
+          <div class="gf-chip">⭐ <span class="num" id="add-g-total-stars">0</span></div>
+          <div class="gf-chip">🎯 <span class="num" id="add-g-pct">-</span></div>
+          <div class="gf-chip">🔢 <span class="num" id="add-g-answered">0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="add-table-section" style="display:none">
+    <div class="table-grid" id="add-table-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════ FRÁDRÁTTUR ══════════ -->
+<div class="op-content" data-op="sub" id="op-sub">
+  <div class="mode-row">
+    <button class="mode-btn active" id="sub-btn-quiz"  onclick="setOpMode('sub','quiz')">🎯 Æfing</button>
+    <button class="mode-btn"        id="sub-btn-all"   onclick="setOpMode('sub','all')">🌍 Allar tölur</button>
+    <button class="mode-btn"        id="sub-btn-game"  onclick="setOpMode('sub','game')">🎮 Leikur</button>
+    <button class="mode-btn"        id="sub-btn-table" onclick="setOpMode('sub','table')">📊 Taflan</button>
+  </div>
+  <div class="table-select" id="sub-table-select"></div>
+
+  <div id="sub-quiz-section">
+    <div class="quiz-card">
+      <div class="question-display" id="sub-q-text">? − ? = ?</div>
+      <div class="input-row">
+        <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9\-]*" id="sub-answer-input" placeholder="?" autocomplete="off" maxlength="4"/>
+        <button class="check-btn" onclick="checkQ('sub')">✓</button>
+      </div>
+      <div class="neg-hint" id="sub-neg-hint"></div>
+      <div class="feedback" id="sub-feedback"></div>
+      <div class="streak-display" id="sub-streak-disp"></div>
+      <button class="next-btn" id="sub-next-btn" onclick="nextQ('sub')">Næsta spurning →</button>
+      <div class="stats-row">
+        <div class="stat-chip">✅ <span class="num" id="sub-sc-r">0</span></div>
+        <div class="stat-chip">❌ <span class="num" id="sub-sc-w">0</span></div>
+        <div class="stat-chip">🎯 <span class="num" id="sub-sc-p">-</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="sub-prog"></div></div>
+    </div>
+  </div>
+
+  <div id="sub-all-section" style="display:none">
+    <div class="quiz-card">
+      <div class="all-badge">🌍 Allar tölur</div>
+      <div class="question-display" id="sub-aq-text">? − ? = ?</div>
+      <div class="input-row">
+        <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9\-]*" id="sub-all-input" placeholder="?" autocomplete="off" maxlength="4"/>
+        <button class="check-btn" onclick="checkAll('sub')">✓</button>
+      </div>
+      <div class="neg-hint" id="sub-all-neg-hint"></div>
+      <div class="feedback" id="sub-all-feedback"></div>
+      <div class="streak-display" id="sub-all-streak-disp"></div>
+      <button class="next-btn" id="sub-all-next-btn" onclick="nextAllQ('sub')">Næsta spurning →</button>
+      <div class="stats-row">
+        <div class="stat-chip">✅ <span class="num" id="sub-asc-r">0</span></div>
+        <div class="stat-chip">❌ <span class="num" id="sub-asc-w">0</span></div>
+        <div class="stat-chip">🎯 <span class="num" id="sub-asc-p">-</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="sub-all-prog"></div></div>
+      <div class="round-info" id="sub-round-info"></div>
+    </div>
+  </div>
+
+  <div id="sub-game-section" style="display:none">
+    <div class="game-section-inner">
+      <div class="game-card">
+        <div class="overlay" id="sub-game-overlay">
+          <div class="ov-emoji"  id="sub-ov-emoji">🎉</div>
+          <div class="ov-title"  id="sub-ov-title"></div>
+          <div class="ov-stars"  id="sub-ov-stars"></div>
+          <div class="ov-sub"    id="sub-ov-sub"></div>
+          <button class="ov-btn" onclick="overlayAction('sub')">Áfram!</button>
+        </div>
+        <div class="level-banner">
+          <div class="level-label" id="sub-g-level">Stig 1</div>
+          <div class="level-name"  id="sub-g-levelname">Byrjandi 🐣</div>
+        </div>
+        <div class="lives-row" id="sub-lives-row"></div>
+        <div class="star-bar"  id="sub-star-bar"></div>
+        <div class="timer-wrap"><div class="timer-fill" id="sub-timer-fill"></div></div>
+        <div class="game-q" id="sub-g-q">? − ?</div>
+        <div class="choices" id="sub-choices"></div>
+        <div class="game-feedback" id="sub-g-feedback"></div>
+        <div class="game-footer">
+          <div class="gf-chip">⭐ <span class="num" id="sub-g-total-stars">0</span></div>
+          <div class="gf-chip">🎯 <span class="num" id="sub-g-pct">-</span></div>
+          <div class="gf-chip">🔢 <span class="num" id="sub-g-answered">0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sub-table-section" style="display:none">
+    <div class="table-grid" id="sub-table-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════ MARGFÖLDUN ══════════ -->
+<div class="op-content" data-op="mul" id="op-mul">
+  <div class="mode-row">
+    <button class="mode-btn active" id="mul-btn-quiz"  onclick="setOpMode('mul','quiz')">🎯 Æfing</button>
+    <button class="mode-btn"        id="mul-btn-all"   onclick="setOpMode('mul','all')">🌍 Allar tölur</button>
+    <button class="mode-btn"        id="mul-btn-game"  onclick="setOpMode('mul','game')">🎮 Leikur</button>
+    <button class="mode-btn"        id="mul-btn-table" onclick="setOpMode('mul','table')">📊 Taflan</button>
+  </div>
+  <div class="table-select" id="mul-table-select"></div>
+
+  <div id="mul-quiz-section">
+    <div class="quiz-card">
+      <div class="question-display" id="mul-q-text">? × ? = ?</div>
+      <div class="input-row">
+        <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9]*" id="mul-answer-input" placeholder="?" autocomplete="off" maxlength="3"/>
+        <button class="check-btn" onclick="checkQ('mul')">✓</button>
+      </div>
+      <div class="feedback" id="mul-feedback"></div>
+      <div class="streak-display" id="mul-streak-disp"></div>
+      <button class="next-btn" id="mul-next-btn" onclick="nextQ('mul')">Næsta spurning →</button>
+      <div class="stats-row">
+        <div class="stat-chip">✅ <span class="num" id="mul-sc-r">0</span></div>
+        <div class="stat-chip">❌ <span class="num" id="mul-sc-w">0</span></div>
+        <div class="stat-chip">🎯 <span class="num" id="mul-sc-p">-</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="mul-prog"></div></div>
+    </div>
+  </div>
+
+  <div id="mul-all-section" style="display:none">
+    <div class="quiz-card">
+      <div class="all-badge">🌍 Allar tölur</div>
+      <div class="question-display" id="mul-aq-text">? × ? = ?</div>
+      <div class="input-row">
+        <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9]*" id="mul-all-input" placeholder="?" autocomplete="off" maxlength="3"/>
+        <button class="check-btn" onclick="checkAll('mul')">✓</button>
+      </div>
+      <div class="feedback" id="mul-all-feedback"></div>
+      <div class="streak-display" id="mul-all-streak-disp"></div>
+      <button class="next-btn" id="mul-all-next-btn" onclick="nextAllQ('mul')">Næsta spurning →</button>
+      <div class="stats-row">
+        <div class="stat-chip">✅ <span class="num" id="mul-asc-r">0</span></div>
+        <div class="stat-chip">❌ <span class="num" id="mul-asc-w">0</span></div>
+        <div class="stat-chip">🎯 <span class="num" id="mul-asc-p">-</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="mul-all-prog"></div></div>
+      <div class="round-info" id="mul-round-info"></div>
+    </div>
+  </div>
+
+  <div id="mul-game-section" style="display:none">
+    <div class="game-section-inner">
+      <div class="game-card">
+        <div class="overlay" id="mul-game-overlay">
+          <div class="ov-emoji"  id="mul-ov-emoji">🎉</div>
+          <div class="ov-title"  id="mul-ov-title"></div>
+          <div class="ov-stars"  id="mul-ov-stars"></div>
+          <div class="ov-sub"    id="mul-ov-sub"></div>
+          <button class="ov-btn" onclick="overlayAction('mul')">Áfram!</button>
+        </div>
+        <div class="level-banner">
+          <div class="level-label" id="mul-g-level">Stig 1</div>
+          <div class="level-name"  id="mul-g-levelname">Byrjandi 🐣</div>
+        </div>
+        <div class="lives-row" id="mul-lives-row"></div>
+        <div class="star-bar"  id="mul-star-bar"></div>
+        <div class="timer-wrap"><div class="timer-fill" id="mul-timer-fill"></div></div>
+        <div class="game-q" id="mul-g-q">? × ?</div>
+        <div class="choices" id="mul-choices"></div>
+        <div class="game-feedback" id="mul-g-feedback"></div>
+        <div class="game-footer">
+          <div class="gf-chip">⭐ <span class="num" id="mul-g-total-stars">0</span></div>
+          <div class="gf-chip">🎯 <span class="num" id="mul-g-pct">-</span></div>
+          <div class="gf-chip">🔢 <span class="num" id="mul-g-answered">0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mul-table-section" style="display:none">
+    <div class="table-grid" id="mul-table-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════ DEILING ══════════ -->
+<div class="op-content" data-op="div" id="op-div">
+  <div class="mode-row">
+    <button class="mode-btn active" id="div-btn-quiz"  onclick="setOpMode('div','quiz')">🎯 Æfing</button>
+    <button class="mode-btn"        id="div-btn-all"   onclick="setOpMode('div','all')">🌍 Allar tölur</button>
+    <button class="mode-btn"        id="div-btn-game"  onclick="setOpMode('div','game')">🎮 Leikur</button>
+    <button class="mode-btn"        id="div-btn-table" onclick="setOpMode('div','table')">📊 Taflan</button>
+  </div>
+  <div class="table-select" id="div-table-select"></div>
+
+  <div id="div-quiz-section">
+    <div class="quiz-card">
+      <div class="question-display" id="div-q-text">? ÷ ? = ?</div>
+      <div class="input-row">
+        <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9]*" id="div-answer-input" placeholder="?" autocomplete="off" maxlength="3"/>
+        <button class="check-btn" onclick="checkQ('div')">✓</button>
+      </div>
+      <div class="feedback" id="div-feedback"></div>
+      <div class="streak-display" id="div-streak-disp"></div>
+      <button class="next-btn" id="div-next-btn" onclick="nextQ('div')">Næsta spurning →</button>
+      <div class="stats-row">
+        <div class="stat-chip">✅ <span class="num" id="div-sc-r">0</span></div>
+        <div class="stat-chip">❌ <span class="num" id="div-sc-w">0</span></div>
+        <div class="stat-chip">🎯 <span class="num" id="div-sc-p">-</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="div-prog"></div></div>
+    </div>
+  </div>
+
+  <div id="div-all-section" style="display:none">
+    <div class="quiz-card">
+      <div class="all-badge">🌍 Allar tölur</div>
+      <div class="question-display" id="div-aq-text">? ÷ ? = ?</div>
+      <div class="input-row">
+        <input class="ans-input" type="text" inputmode="numeric" pattern="[0-9]*" id="div-all-input" placeholder="?" autocomplete="off" maxlength="3"/>
+        <button class="check-btn" onclick="checkAll('div')">✓</button>
+      </div>
+      <div class="feedback" id="div-all-feedback"></div>
+      <div class="streak-display" id="div-all-streak-disp"></div>
+      <button class="next-btn" id="div-all-next-btn" onclick="nextAllQ('div')">Næsta spurning →</button>
+      <div class="stats-row">
+        <div class="stat-chip">✅ <span class="num" id="div-asc-r">0</span></div>
+        <div class="stat-chip">❌ <span class="num" id="div-asc-w">0</span></div>
+        <div class="stat-chip">🎯 <span class="num" id="div-asc-p">-</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="div-all-prog"></div></div>
+      <div class="round-info" id="div-round-info"></div>
+    </div>
+  </div>
+
+  <div id="div-game-section" style="display:none">
+    <div class="game-section-inner">
+      <div class="game-card">
+        <div class="overlay" id="div-game-overlay">
+          <div class="ov-emoji"  id="div-ov-emoji">🎉</div>
+          <div class="ov-title"  id="div-ov-title"></div>
+          <div class="ov-stars"  id="div-ov-stars"></div>
+          <div class="ov-sub"    id="div-ov-sub"></div>
+          <button class="ov-btn" onclick="overlayAction('div')">Áfram!</button>
+        </div>
+        <div class="level-banner">
+          <div class="level-label" id="div-g-level">Stig 1</div>
+          <div class="level-name"  id="div-g-levelname">Byrjandi 🐣</div>
+        </div>
+        <div class="lives-row" id="div-lives-row"></div>
+        <div class="star-bar"  id="div-star-bar"></div>
+        <div class="timer-wrap"><div class="timer-fill" id="div-timer-fill"></div></div>
+        <div class="game-q" id="div-g-q">? ÷ ?</div>
+        <div class="choices" id="div-choices"></div>
+        <div class="game-feedback" id="div-g-feedback"></div>
+        <div class="game-footer">
+          <div class="gf-chip">⭐ <span class="num" id="div-g-total-stars">0</span></div>
+          <div class="gf-chip">🎯 <span class="num" id="div-g-pct">-</span></div>
+          <div class="gf-chip">🔢 <span class="num" id="div-g-answered">0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="div-table-section" style="display:none">
+    <div class="table-grid" id="div-table-grid"></div>
+  </div>
+</div>
+
+<div class="confetti-container" id="conf-wrap"></div>
+
+<script>
+/* ══════════════════════════════════════
+   CONSTANTS & SHARED
+══════════════════════════════════════ */
+const OK_MSG = ['Snillingur! 🌟','Æðislegt! 🚀','Nákvæmlega! 🎯','Frábært! 🏆','Algjört stórmerki! ⭐','Þetta er rétt! 🥳'];
+const NO_MSG = ['Reyndu aftur! 💪','Svona nálægt! 🤔','Ekki alveg! 🔄','Gefðu þér! 😊'];
+const COLORS = ['#FF6B6B','#FFD93D','#6ECFFF','#6BFFB8','#C678FF','#FF9F40'];
+
+const OPS = ['add','sub','mul','div'];
+const OP_SYM = { add:'+', sub:'−', mul:'×', div:'÷' };
+
+// Current operation tab
+let currentOp = 'add';
+
+// Per-op state
+const opState = {};
+OPS.forEach(op => {
+  opState[op] = {
+    mode: 'quiz',
+    sel: 3,
+    // quiz
+    qCur: null, qAnswered: false, qStreak: 0, qRight: 0, qWrong: 0, qTotal: 0,
+    // all
+    allQ: null, allAnswered: false, allStreak: 0, allRight: 0, allWrong: 0, allTotal: 0,
+    allQueue: [], allQIdx: 0,
+    // game
+    gLevel: 0, gStars: 0, gLives: 3, gTotalStars: 0,
+    gAnswered: false, gRight: 0, gAnsweredTotal: 0,
+    gCurQ: null, gTimerInterval: null, gTimeLeft: 0, gTimeSec: 15,
+    gOverlayMode: '',
+  };
+});
+
+/* ── LEVELS (same for all ops) ── */
+const LEVELS = [
+  { name:'Byrjandi',   emoji:'🐣', tables:[1,2,3],                     stars:3, lives:3, time:15 },
+  { name:'Nemandi',    emoji:'📚', tables:[2,3,4,5],                   stars:4, lives:3, time:13 },
+  { name:'Þjálfari',   emoji:'⚡', tables:[3,4,5,6],                   stars:5, lives:3, time:11 },
+  { name:'Meistari',   emoji:'🥋', tables:[4,5,6,7,8],                 stars:5, lives:3, time:10 },
+  { name:'Snillingur', emoji:'🧠', tables:[5,6,7,8,9],                 stars:6, lives:3, time:9  },
+  { name:'Stjarnan',   emoji:'🌟', tables:[6,7,8,9,10],                stars:6, lives:3, time:8  },
+  { name:'Hetja',      emoji:'🦸', tables:[1,2,3,4,5,6,7,8,9,10],     stars:7, lives:3, time:7  },
+  { name:'Goðsögn',   emoji:'🏆', tables:[1,2,3,4,5,6,7,8,9,10],     stars:8, lives:3, time:6  },
+];
+
+/* ══════════════════════════════════════
+   QUESTION GENERATION
+══════════════════════════════════════ */
+function genQ(op, sel) {
+  const b = Math.floor(Math.random()*10)+1;
+  if (op === 'add') {
+    const sw = Math.random() > .5;
+    const a = sw ? b : sel, bb = sw ? sel : b;
+    return { a, b: bb, ans: a + bb, sym: '+' };
+  }
+  if (op === 'sub') {
+    // Always ensure a >= b so no negatives for low levels; but allow for variety
+    const big = sel + b; // big − b = sel, or big − sel = b
+    const sw = Math.random() > .5;
+    if (sw) return { a: big, b: b, ans: sel, sym: '−' };
+    else    return { a: big, b: sel, ans: b, sym: '−' };
+  }
+  if (op === 'mul') {
+    const sw = Math.random() > .5;
+    const a = sw ? b : sel, bb = sw ? sel : b;
+    return { a, b: bb, ans: a * bb, sym: '×' };
+  }
+  if (op === 'div') {
+    // sel ÷ b = quotient (always integer)
+    const quotient = Math.floor(Math.random()*10)+1;
+    return { a: sel * quotient, b: sel, ans: quotient, sym: '÷' };
+  }
+}
+
+function genAllQ(op, a, b) {
+  if (op === 'add') return { a, b, ans: a+b, sym: '+' };
+  if (op === 'sub') {
+    const big = a + b;
+    return { a: big, b: b, ans: a, sym: '−' };
+  }
+  if (op === 'mul') return { a, b, ans: a*b, sym: '×' };
+  if (op === 'div') return { a: a*b, b: b, ans: a, sym: '÷' };
+}
+
+/* ══════════════════════════════════════
+   OP / MODE SWITCHING
+══════════════════════════════════════ */
+function switchOp(op) {
+  currentOp = op;
+  OPS.forEach(o => {
+    document.getElementById('op-'+o).classList.toggle('active', o===op);
+    document.querySelector(`.op-tab[data-op="${o}"]`).classList.toggle('active', o===op);
+  });
+  // If mode hasn't been started yet for this op, init
+  const s = opState[op];
+  if (!s.qCur) initOp(op);
+}
+
+function initOp(op) {
+  buildTableSelector(op);
+  setOpMode(op, opState[op].mode);
+}
+
+function setOpMode(op, m) {
+  const s = opState[op];
+  s.mode = m;
+  ['quiz','all','game','table'].forEach(k => {
+    document.getElementById(`${op}-btn-${k}`).classList.toggle('active', k===m);
+    document.getElementById(`${op}-${k}-section`).style.display = k===m ? 'block' : 'none';
+  });
+  const ts = document.getElementById(`${op}-table-select`);
+  ts.style.display = (m==='quiz'||m==='table') ? 'flex' : 'none';
+
+  if      (m==='quiz')  nextQ(op);
+  else if (m==='all')   { buildAllQueue(op); nextAllQ(op); }
+  else if (m==='game')  startGame(op);
+  else                  renderTable(op);
+}
+
+/* ══════════════════════════════════════
+   TABLE SELECTOR
+══════════════════════════════════════ */
+function buildTableSelector(op) {
+  const wrap = document.getElementById(`${op}-table-select`);
+  if (wrap.children.length > 0) return; // already built
+  for (let i = 1; i <= 10; i++) {
+    const b = document.createElement('button');
+    b.className = 'tbl-btn' + (i === opState[op].sel ? ' active' : '');
+    b.textContent = i;
+    b.onclick = () => selectTable(op, i);
+    wrap.appendChild(b);
+  }
+  // Hide initially (quiz mode shows it)
+  wrap.style.display = 'flex';
+}
+
+function selectTable(op, n) {
+  const s = opState[op];
+  s.sel = n;
+  document.querySelectorAll(`#${op}-table-select .tbl-btn`).forEach((b,i) => b.classList.toggle('active', i+1===n));
+  s.qRight=0; s.qWrong=0; s.qTotal=0; s.qStreak=0; updateQStats(op);
+  if (s.mode==='quiz') nextQ(op);
+  else if (s.mode==='table') renderTable(op);
+}
+
+/* ══════════════════════════════════════
+   ÆFING — SINGLE TABLE
+══════════════════════════════════════ */
+function nextQ(op) {
+  const s = opState[op];
+  s.qAnswered = false;
+  s.qCur = genQ(op, s.sel);
+  const q = s.qCur;
+  document.getElementById(`${op}-q-text`).innerHTML =
+    `<span class="a">${q.a}</span> <span class="op-sym">${q.sym}</span> <span class="b">${q.b}</span> = ?`;
+  const inp = document.getElementById(`${op}-answer-input`);
+  inp.value=''; inp.className='ans-input'; inp.focus();
+  document.getElementById(`${op}-feedback`).textContent='';
+  document.getElementById(`${op}-feedback`).className='feedback';
+  document.getElementById(`${op}-next-btn`).style.display='none';
+  document.getElementById(`${op}-streak-disp`).textContent = s.qStreak>=3 ? `🔥 ${s.qStreak} í röð!` : '';
+  if (op==='sub') {
+    const hint = document.getElementById('sub-neg-hint');
+    if (hint) hint.textContent = '';
+  }
+}
+
+function checkQ(op) {
+  const s = opState[op];
+  if (s.qAnswered) return;
+  const inp = document.getElementById(`${op}-answer-input`);
+  const raw = inp.value.trim();
+  const val = parseInt(raw.replace(/[^0-9\-]/g,''), 10);
+  if (isNaN(val) || raw==='') { inp.focus(); return; }
+  s.qAnswered=true; s.qTotal++;
+  const fb = document.getElementById(`${op}-feedback`);
+  if (val===s.qCur.ans) {
+    s.qRight++; s.qStreak++;
+    inp.className='ans-input correct';
+    fb.textContent=OK_MSG[Math.floor(Math.random()*OK_MSG.length)];
+    fb.className='feedback ok';
+    if (s.qStreak>=3) spawnConfetti(false);
+    updateQStats(op); setTimeout(()=>nextQ(op), 1100);
+  } else {
+    s.qWrong++; s.qStreak=0;
+    inp.className='ans-input wrong';
+    fb.innerHTML=`${NO_MSG[Math.floor(Math.random()*NO_MSG.length)]} &mdash; Rétt svar: <strong>${s.qCur.ans}</strong>`;
+    fb.className='feedback no';
+    document.getElementById(`${op}-next-btn`).style.display='inline-block';
+    updateQStats(op);
+  }
+  document.getElementById(`${op}-streak-disp`).textContent = s.qStreak>=3 ? `🔥 ${s.qStreak} í röð!` : '';
+}
+
+function updateQStats(op) {
+  const s = opState[op];
+  document.getElementById(`${op}-sc-r`).textContent=s.qRight;
+  document.getElementById(`${op}-sc-w`).textContent=s.qWrong;
+  document.getElementById(`${op}-sc-p`).textContent=s.qTotal>0 ? Math.round(s.qRight/s.qTotal*100)+'%' : '-';
+  document.getElementById(`${op}-prog`).style.width=Math.min((s.qRight%11)/10*100,100)+'%';
+}
+
+/* ══════════════════════════════════════
+   ALLAR TÖLUR
+══════════════════════════════════════ */
+function buildAllQueue(op) {
+  const q=[];
+  for(let a=1;a<=10;a++) for(let b=1;b<=10;b++) q.push(genAllQ(op,a,b));
+  for(let i=q.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [q[i],q[j]]=[q[j],q[i]];
+  }
+  opState[op].allQueue=q;
+  opState[op].allQIdx=0;
+}
+
+function nextAllQ(op) {
+  const s = opState[op];
+  if (s.allQIdx>=s.allQueue.length) buildAllQueue(op);
+  s.allAnswered=false;
+  s.allQ=s.allQueue[s.allQIdx++];
+  const q=s.allQ;
+  document.getElementById(`${op}-aq-text`).innerHTML=
+    `<span class="a">${q.a}</span> <span class="op-sym">${q.sym}</span> <span class="b">${q.b}</span> = ?`;
+  const inp=document.getElementById(`${op}-all-input`);
+  inp.value=''; inp.className='ans-input'; inp.focus();
+  document.getElementById(`${op}-all-feedback`).textContent='';
+  document.getElementById(`${op}-all-feedback`).className='feedback';
+  document.getElementById(`${op}-all-next-btn`).style.display='none';
+  document.getElementById(`${op}-all-streak-disp`).textContent=s.allStreak>=3?`🔥 ${s.allStreak} í röð!`:'';
+  updateAllRound(op);
+}
+
+function checkAll(op) {
+  const s=opState[op];
+  if (s.allAnswered) return;
+  const inp=document.getElementById(`${op}-all-input`);
+  const raw=inp.value.trim();
+  const val=parseInt(raw.replace(/[^0-9\-]/g,''),10);
+  if (isNaN(val)||raw===''){inp.focus();return;}
+  s.allAnswered=true; s.allTotal++;
+  const fb=document.getElementById(`${op}-all-feedback`);
+  if (val===s.allQ.ans) {
+    s.allRight++; s.allStreak++;
+    inp.className='ans-input correct';
+    fb.textContent=OK_MSG[Math.floor(Math.random()*OK_MSG.length)];
+    fb.className='feedback ok';
+    if (s.allStreak>=3) spawnConfetti(false);
+    updateAllStats(op); setTimeout(()=>nextAllQ(op),1100);
+  } else {
+    s.allWrong++; s.allStreak=0;
+    inp.className='ans-input wrong';
+    fb.innerHTML=`${NO_MSG[Math.floor(Math.random()*NO_MSG.length)]} &mdash; Rétt svar: <strong>${s.allQ.ans}</strong>`;
+    fb.className='feedback no';
+    document.getElementById(`${op}-all-next-btn`).style.display='inline-block';
+    updateAllStats(op);
+  }
+  document.getElementById(`${op}-all-streak-disp`).textContent=s.allStreak>=3?`🔥 ${s.allStreak} í röð!`:'';
+}
+
+function updateAllStats(op){
+  const s=opState[op];
+  document.getElementById(`${op}-asc-r`).textContent=s.allRight;
+  document.getElementById(`${op}-asc-w`).textContent=s.allWrong;
+  document.getElementById(`${op}-asc-p`).textContent=s.allTotal>0?Math.round(s.allRight/s.allTotal*100)+'%':'-';
+  document.getElementById(`${op}-all-prog`).style.width=Math.round((s.allQIdx/s.allQueue.length)*100)+'%';
+  updateAllRound(op);
+}
+function updateAllRound(op){
+  const s=opState[op];
+  document.getElementById(`${op}-round-info`).textContent=
+    `Spurning ${Math.min(s.allQIdx,s.allQueue.length)} / ${s.allQueue.length} í þessum hring`;
+}
+
+/* ══════════════════════════════════════
+   LEIKUR 🎮
+══════════════════════════════════════ */
+function startGame(op) {
+  const s=opState[op];
+  s.gLevel=0; s.gTotalStars=0; s.gRight=0; s.gAnsweredTotal=0;
+  startLevel(op);
+}
+
+function startLevel(op) {
+  const s=opState[op];
+  const lv=LEVELS[s.gLevel];
+  s.gStars=0; s.gLives=lv.lives; s.gTimeSec=lv.time; s.gAnswered=false;
+  hideOverlay(op);
+  renderGameUI(op);
+  newGameQ(op);
+}
+
+function renderGameUI(op) {
+  const s=opState[op];
+  const lv=LEVELS[s.gLevel];
+  document.getElementById(`${op}-g-level`).textContent=`Stig ${s.gLevel+1}`;
+  document.getElementById(`${op}-g-levelname`).textContent=`${lv.name} ${lv.emoji}`;
+
+  const lr=document.getElementById(`${op}-lives-row`);
+  lr.innerHTML='';
+  for(let i=0;i<lv.lives;i++){
+    const h=document.createElement('span');
+    h.className='heart'; h.textContent='❤️'; h.id=`${op}-heart-${i}`;
+    lr.appendChild(h);
+  }
+
+  const sb=document.getElementById(`${op}-star-bar`);
+  sb.innerHTML='';
+  for(let i=0;i<lv.stars;i++){
+    const st=document.createElement('span');
+    st.className='star-slot'; st.textContent='⭐'; st.id=`${op}-gstar-${i}`;
+    sb.appendChild(st);
+  }
+  updateGameFooter(op);
+}
+
+function gameGenQ(op, lv) {
+  const t=lv.tables[Math.floor(Math.random()*lv.tables.length)];
+  const b=Math.floor(Math.random()*10)+1;
+  if (op==='add') {
+    const sw=Math.random()>.5;
+    const a=sw?b:t, bb=sw?t:b;
+    return { a, b:bb, ans:a+bb, sym:'+' };
+  }
+  if (op==='sub') {
+    const big=t+b;
+    return { a:big, b:b, ans:t, sym:'−' };
+  }
+  if (op==='mul') {
+    const sw=Math.random()>.5;
+    return sw ? {a:b,b:t,ans:b*t,sym:'×'} : {a:t,b:b,ans:t*b,sym:'×'};
+  }
+  if (op==='div') {
+    // t ÷ b but make it clean: result = t, divisor = b, dividend = t*b
+    return { a:t*b, b:b, ans:t, sym:'÷' };
+  }
+}
+
+function newGameQ(op) {
+  const s=opState[op];
+  if (s.gTimerInterval) clearInterval(s.gTimerInterval);
+  s.gAnswered=false;
+  document.getElementById(`${op}-g-feedback`).textContent='';
+  document.getElementById(`${op}-g-feedback`).className='game-feedback';
+
+  const lv=LEVELS[s.gLevel];
+  s.gCurQ=gameGenQ(op,lv);
+  const q=s.gCurQ;
+  document.getElementById(`${op}-g-q`).innerHTML=
+    `<span class="a">${q.a}</span> ${q.sym} <span class="b">${q.b}</span>`;
+
+  renderChoices(op, makeChoices(op, q.ans));
+
+  s.gTimeLeft=s.gTimeSec;
+  updateTimerBar(op,1);
+  document.getElementById(`${op}-timer-fill`).classList.remove('danger');
+  s.gTimerInterval=setInterval(()=>tickTimer(op),100);
+}
+
+function makeChoices(op, correct) {
+  const candidates=new Set([correct]);
+  const deltas=[-5,-4,-3,-2,-1,1,2,3,4,5,6,-6,10,-10];
+  deltas.forEach(d=>{ const v=correct+d; if(v>=0) candidates.add(v); });
+  while(candidates.size<10) candidates.add(Math.floor(Math.random()*98)+1);
+  const wrongs=[...candidates].filter(v=>v!==correct).sort(()=>Math.random()-.5).slice(0,3);
+  return [correct,...wrongs].sort(()=>Math.random()-.5);
+}
+
+function renderChoices(op, choices) {
+  const box=document.getElementById(`${op}-choices`);
+  box.innerHTML='';
+  choices.forEach(val=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn';
+    btn.textContent=val;
+    btn.onclick=()=>pickChoice(op,val,btn);
+    box.appendChild(btn);
+  });
+}
+
+function tickTimer(op) {
+  const s=opState[op];
+  s.gTimeLeft-=0.1;
+  const frac=Math.max(0,s.gTimeLeft/s.gTimeSec);
+  updateTimerBar(op,frac);
+  if(frac<0.33) document.getElementById(`${op}-timer-fill`).classList.add('danger');
+  if(s.gTimeLeft<=0){ clearInterval(s.gTimerInterval); timeUp(op); }
+}
+
+function updateTimerBar(op,frac){
+  document.getElementById(`${op}-timer-fill`).style.width=(frac*100)+'%';
+}
+
+function timeUp(op) {
+  const s=opState[op];
+  if(s.gAnswered) return;
+  s.gAnswered=true; s.gAnsweredTotal++;
+  revealCorrect(op);
+  document.getElementById(`${op}-g-feedback`).textContent='Tíminn rann út! ⏰';
+  document.getElementById(`${op}-g-feedback`).className='game-feedback no';
+  loseLife(op);
+}
+
+function pickChoice(op, val, btn) {
+  const s=opState[op];
+  if(s.gAnswered) return;
+  clearInterval(s.gTimerInterval);
+  s.gAnswered=true; s.gAnsweredTotal++;
+
+  document.querySelectorAll(`#${op}-choices .choice-btn`).forEach(b=>b.disabled=true);
+
+  if(val===s.gCurQ.ans) {
+    btn.classList.add('correct-choice');
+    s.gRight++; s.gStars++; s.gTotalStars++;
+    document.getElementById(`${op}-g-feedback`).textContent=OK_MSG[Math.floor(Math.random()*OK_MSG.length)];
+    document.getElementById(`${op}-g-feedback`).className='game-feedback ok';
+    updateGameFooter(op);
+    earnStar(op, s.gStars-1);
+
+    if(s.gStars>=LEVELS[s.gLevel].stars){
+      setTimeout(()=>{ spawnConfetti(true); triggerLevelUp(op); }, 700);
+    } else {
+      setTimeout(()=>newGameQ(op), 1100);
+    }
+  } else {
+    btn.classList.add('wrong-choice');
+    revealCorrect(op);
+    document.getElementById(`${op}-g-feedback`).innerHTML=
+      `${NO_MSG[Math.floor(Math.random()*NO_MSG.length)]} &mdash; Rétt: <strong>${s.gCurQ.ans}</strong>`;
+    document.getElementById(`${op}-g-feedback`).className='game-feedback no';
+    loseLife(op);
+  }
+}
+
+function revealCorrect(op){
+  document.querySelectorAll(`#${op}-choices .choice-btn`).forEach(b=>{
+    b.disabled=true;
+    if(+b.textContent===opState[op].gCurQ.ans) b.classList.add('correct-choice');
+  });
+}
+
+function earnStar(op, idx) {
+  const el=document.getElementById(`${op}-gstar-${idx}`);
+  if(!el) return;
+  el.classList.add('earned');
+  void el.offsetWidth;
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
+function loseLife(op) {
+  const s=opState[op];
+  s.gLives--;
+  const lv=LEVELS[s.gLevel];
+  const deadIdx=lv.lives-1-(lv.lives-1-s.gLives);
+  const h=document.getElementById(`${op}-heart-${deadIdx}`);
+  if(h) h.classList.add('lost');
+  if(s.gLives<=0){ setTimeout(()=>triggerGameOver(op), 900); }
+  else { setTimeout(()=>newGameQ(op), 1200); }
+}
+
+function triggerLevelUp(op) {
+  const s=opState[op];
+  clearInterval(s.gTimerInterval);
+  if(s.gLevel>=LEVELS.length-1){ triggerWin(op); return; }
+  s.gOverlayMode='levelup';
+  const next=LEVELS[s.gLevel+1];
+  document.getElementById(`${op}-ov-emoji`).textContent='🎉';
+  document.getElementById(`${op}-ov-title`).innerHTML=`Stig ${s.gLevel+1} klárað!`;
+  document.getElementById(`${op}-ov-stars`).textContent='⭐'.repeat(s.gStars);
+  document.getElementById(`${op}-ov-sub`).innerHTML=
+    `Næst: <strong>${next.name} ${next.emoji}</strong><br>Þú þarft ${next.stars} ⭐ á ${next.time} sek.`;
+  document.getElementById(`${op}-game-overlay`).querySelector('.ov-btn').textContent='Áfram! →';
+  document.getElementById(`${op}-game-overlay`).classList.add('show');
+}
+
+function triggerGameOver(op) {
+  const s=opState[op];
+  clearInterval(s.gTimerInterval);
+  s.gOverlayMode='gameover';
+  document.getElementById(`${op}-ov-emoji`).textContent='😢';
+  document.getElementById(`${op}-ov-title`).textContent='Leik lokið!';
+  document.getElementById(`${op}-ov-stars`).textContent='';
+  document.getElementById(`${op}-ov-sub`).innerHTML=`<span class="ov-motto">Reyndu aftur því æfingin skapar meistarann</span><br><br>Þú náðir ${s.gTotalStars} stjörnum ⭐`;
+  document.getElementById(`${op}-game-overlay`).querySelector('.ov-btn').textContent='Reyna aftur 🔄';
+  document.getElementById(`${op}-game-overlay`).classList.add('show');
+}
+
+function triggerWin(op) {
+  const s=opState[op];
+  clearInterval(s.gTimerInterval);
+  s.gOverlayMode='win';
+  spawnConfetti(true);
+  document.getElementById(`${op}-ov-emoji`).textContent='🏆';
+  document.getElementById(`${op}-ov-title`).textContent='Goðsögn! Þú kláraðir allt!';
+  document.getElementById(`${op}-ov-stars`).textContent='⭐'.repeat(s.gTotalStars);
+  document.getElementById(`${op}-ov-sub`).textContent=`Öll ${LEVELS.length} stig kláruð — ótrúlegt!`;
+  document.getElementById(`${op}-game-overlay`).querySelector('.ov-btn').textContent='Spila aftur 🎮';
+  document.getElementById(`${op}-game-overlay`).classList.add('show');
+}
+
+function hideOverlay(op){ document.getElementById(`${op}-game-overlay`).classList.remove('show'); }
+
+function overlayAction(op){
+  const s=opState[op];
+  if(s.gOverlayMode==='levelup'){ s.gLevel++; startLevel(op); }
+  else { startGame(op); }
+}
+
+function updateGameFooter(op){
+  const s=opState[op];
+  document.getElementById(`${op}-g-total-stars`).textContent=s.gTotalStars;
+  document.getElementById(`${op}-g-pct`).textContent=s.gAnsweredTotal>0?Math.round(s.gRight/s.gAnsweredTotal*100)+'%':'-';
+  document.getElementById(`${op}-g-answered`).textContent=s.gAnsweredTotal;
+}
+
+/* ══════════════════════════════════════
+   TAFLAN
+══════════════════════════════════════ */
+function renderTable(op){
+  const s=opState[op];
+  const grid=document.getElementById(`${op}-table-grid`);
+  grid.innerHTML='';
+  for(let i=1;i<=10;i++){
+    const cell=document.createElement('div');
+    cell.className='tg-cell';
+    let top, val;
+    if      (op==='add') { top=`${s.sel} + ${i}`; val=s.sel+i; }
+    else if (op==='sub') { top=`${s.sel+i} − ${i}`; val=s.sel; }
+    else if (op==='mul') { top=`${s.sel} × ${i}`; val=s.sel*i; }
+    else                 { top=`${s.sel*i} ÷ ${s.sel}`; val=i; }
+    cell.innerHTML=`<div class="small">${top}</div><div class="big">${val}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+/* ══════════════════════════════════════
+   CONFETTI
+══════════════════════════════════════ */
+function spawnConfetti(big) {
+  const c=document.getElementById('conf-wrap');
+  const n=big?100:45;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div');
+    el.className='cp';
+    el.style.cssText=`left:${Math.random()*100}vw;`+
+      `background:${COLORS[Math.floor(Math.random()*COLORS.length)]};`+
+      `animation-duration:${0.9+Math.random()*1.4}s;`+
+      `animation-delay:${Math.random()*0.5}s;`+
+      `border-radius:${Math.random()>.5?'50%':'3px'}`;
+    c.appendChild(el);
+    setTimeout(()=>el.remove(),2900);
+  }
+}
+
+/* ══════════════════════════════════════
+   KEYBOARD LISTENERS
+══════════════════════════════════════ */
+OPS.forEach(op => {
+  const inp = document.getElementById(`${op}-answer-input`);
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') checkQ(op); });
+  inp.addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/[^0-9\-]/g, '').slice(0, 4);
+  });
+  const ainp = document.getElementById(`${op}-all-input`);
+  ainp.addEventListener('keydown', e => { if(e.key==='Enter') checkAll(op); });
+  ainp.addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/[^0-9\-]/g, '').slice(0, 4);
+  });
+});
+
+/* ── INIT ── */
+initOp('add');
+</script>
+</body>
+</html>
