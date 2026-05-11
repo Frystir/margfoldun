@@ -1,36 +1,60 @@
-# 🔢 Margföldunartaflan
+# 🔢 Stærðfræðiæfingar
 
-Skemmtileg og einföld vefsíða fyrir börn til að læra margföldunartöfluna.
+Gagnvirkur stærðfræðiæfingaforritið fyrir börn (og fullorðna!). Eitt HTML skjal — engin uppsetning þarf.
 
-## Eiginleikar
+## ✨ Eiginleikar
 
-- 🎯 **Æfing** — Æfðu eina töflu í einu með innsláttarglugga
-- 🌍 **Allar tölur** — Æfðu allar tölurnar af handahófi
-- 🎮 **Leikur** — Stigastig leikur með hjörtu, stjörnur og tímamæli
-- 📊 **Taflan** — Skoðaðu margföldunartöfluna fyrir hverja tölu
+Fjórir reikningsflippar:
 
-## Tækni
+| Flipi | Aðgerð |
+|-------|--------|
+| ➕ | Samlagning |
+| ➖ | Frádráttur |
+| ✖️ | Margföldun |
+| ➗ | Deiling |
 
-- Einfalt HTML/CSS/JavaScript — ein skrá, engar dependencies
-- Virkar beint í vafra, þarf ekki þjón
-- GitHub Pages ready
+Sérhver flipi inniheldur **4 stillingar**:
 
-## Uppsetning
+- 🎯 **Æfing** — Veldu töflu (1–10) og æfðu þig
+- 🌍 **Allar tölur** — Slembið spurningaframhald í gegnum allar samsetningar
+- 🎮 **Leikur** — 8 stig með tímataki, hjörtum og stjörnum
+- 📊 **Taflan** — Skoðaðu töfluna fyrir valið tölustaf
+
+## 🎮 Leikurinn
+
+8 stig með vaxandi erfiðleika:
+
+| Stig | Nafn | Taflar | Tími |
+|------|------|--------|------|
+| 1 | Byrjandi 🐣 | 1–3 | 15 sek |
+| 2 | Nemandi 📚 | 2–5 | 13 sek |
+| 3 | Þjálfari ⚡ | 3–6 | 11 sek |
+| 4 | Meistari 🥋 | 4–8 | 10 sek |
+| 5 | Snillingur 🧠 | 5–9 | 9 sek |
+| 6 | Stjarnan 🌟 | 6–10 | 8 sek |
+| 7 | Hetja 🦸 | 1–10 | 7 sek |
+| 8 | Goðsögn 🏆 | 1–10 | 6 sek |
+
+## 🚀 Notkun
 
 ```bash
-git clone https://github.com/notandanafn/margfoldunartafla.git
-cd margfoldunartafla
-# Opnaðu index.html í vafra
+# Opnaðu beint í vafra
+open index.html
 ```
 
-Eða skoðaðu live á **GitHub Pages**.
+Eða settu upp á **GitHub Pages**:
 
-## GitHub Pages
+1. Forkaðu þetta geymslu
+2. Farðu í **Settings → Pages**
+3. Veldu `main` grein og `/ (root)`
+4. Appið er aðgengilegt á `https://<notandanafn>.github.io/<geymsluheiti>`
 
-1. Farðu í **Settings → Pages**
-2. Veldu `main` branch og `/ (root)`
-3. Smelltu **Save** — síðan er komin á netið!
+## 🛠️ Tækni
 
-## Leyfi
+- Eitt vanilla HTML/CSS/JS skjal — engar dependencies
+- [Fredoka One](https://fonts.google.com/specimen/Fredoka+One) og [Nunito](https://fonts.google.com/specimen/Nunito) leturgerðir
+- Virkar á öllum nútíma vöfrum og snjalltækjum
+
+## 📄 Leyfi
 
 MIT
